@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements-dev.txt
+      - run: python -m pytest -q tests
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t grubtrack:ci .
+      - name: Start it with demo data and check the API
+        run: |
+          mkdir -p data && sudo chown 1000 data
+          docker run --rm -v "$PWD/data:/data" grubtrack:ci python3 /app/tools/seed_demo.py
+          docker run -d --name gt -p 8888:8888 -v "$PWD/data:/data" grubtrack:ci
+          for i in $(seq 1 30); do curl -sf localhost:8888/api/health && break; sleep 1; done
+          curl -sf localhost:8888/api/health | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['items'] > 0, d; print(d)"
+          curl -sf localhost:8888/ | grep -q GrubTrack
+          docker exec gt grubtrack inventory | python3 -c "import json,sys; print(len(json.load(sys.stdin)), 'items via the CLI')"
+          docker logs gt

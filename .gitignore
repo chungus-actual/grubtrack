@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+pnpm-lock.yaml.bak
+data/
+.playwright-mcp/

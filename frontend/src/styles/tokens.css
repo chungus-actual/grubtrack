@@ -1,0 +1,129 @@
+/* GrubTrack tokens. The shelf edge: white tags on a cool aisle, black price ink, sale yellow.
+   Light and dark are each chosen, not flipped; the chart slots were validated against these
+   surfaces (dataviz validate_palette.js: light #ffffff, dark #1c1f23). */
+
+:root {
+  color-scheme: light;
+  --page: #f2f3f1;
+  --surface: #ffffff;
+  --surface-2: #f7f8f6;
+  --surface-3: #eceeeb;
+  --ink: #14171c;
+  --ink-2: #4b525c;
+  --ink-3: #6b727c;
+  --line: #dcdfe0;
+  --line-2: #c4c8cb;
+  --scrim: rgba(20, 23, 28, 0.42);
+
+  --yellow: #ffd400;
+  --yellow-ink: #14171c;
+  --yellow-soft: #fff6c2;
+  --up: #c62f2f;
+  --up-soft: #fbe6e4;
+  --down: #0d7a3a;
+  --down-soft: #e2f3e8;
+  --warn: #9a5800;
+  --warn-soft: #fdefd9;
+  --expired: #b42318;
+
+  /* chart: categorical slots (stores, in the order they were first seen), one sequential hue */
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --s5: #e87ba4;
+  --seq: #2a78d6;
+  --seq-soft: rgba(42, 120, 214, 0.12);
+  --grid: #e7e9ea;
+  --axis: #c4c8cb;
+
+  --font: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --t-xs: 12px;
+  --t-sm: 13px;
+  --t-md: 15px;
+  --t-lg: 18px;
+  --t-xl: 24px;
+  --t-2xl: 32px;
+  --t-3xl: 44px;
+
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-pill: 999px;
+
+  --gutter: 16px;
+  --rail: 232px;
+  --tabbar: 64px;
+  --sheet: 560px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (min-width: 720px) {
+  :root { --gutter: 28px; }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --page: #14161a;
+    --surface: #1c1f23;
+    --surface-2: #22262b;
+    --surface-3: #2a2e34;
+    --ink: #eef0ec;
+    --ink-2: #b6bcc2;
+    --ink-3: #8f969e;
+    --line: #2c3036;
+    --line-2: #3a3f46;
+    --scrim: rgba(0, 0, 0, 0.6);
+    --yellow-soft: #3b3410;
+    --up: #ff7a6e;
+    --up-soft: #3a1f1d;
+    --down: #45d17c;
+    --down-soft: #16301f;
+    --warn: #f0a640;
+    --warn-soft: #36290f;
+    --expired: #ff7a6e;
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --s4: #c98500;
+    --s5: #d55181;
+    --seq: #3987e5;
+    --seq-soft: rgba(57, 135, 229, 0.16);
+    --grid: #262a2f;
+    --axis: #3a3f46;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #14161a;
+  --surface: #1c1f23;
+  --surface-2: #22262b;
+  --surface-3: #2a2e34;
+  --ink: #eef0ec;
+  --ink-2: #b6bcc2;
+  --ink-3: #8f969e;
+  --line: #2c3036;
+  --line-2: #3a3f46;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --yellow-soft: #3b3410;
+  --up: #ff7a6e;
+  --up-soft: #3a1f1d;
+  --down: #45d17c;
+  --down-soft: #16301f;
+  --warn: #f0a640;
+  --warn-soft: #36290f;
+  --expired: #ff7a6e;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --s4: #c98500;
+  --s5: #d55181;
+  --seq: #3987e5;
+  --seq-soft: rgba(57, 135, 229, 0.16);
+  --grid: #262a2f;
+  --axis: #3a3f46;
+}

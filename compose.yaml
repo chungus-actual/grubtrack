@@ -1,0 +1,25 @@
+# docker compose up -d   then open http://localhost:8888
+# Settings are environment variables; the README lists them all.
+services:
+  grubtrack:
+    build: .
+    image: grubtrack:latest
+    container_name: grubtrack
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/data          # food.db, photos and recipes live here
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # reach an Ollama or LM Studio running on this machine
+    environment:
+      TZ: America/New_York    # "today" for expiry dates is the server's date
+      # A model reads receipt photos and recipes, and suggests meals when there's no agent.
+      # Any OpenAI-compatible server works (Ollama, LM Studio, OpenRouter, OpenAI):
+      # GT_MODEL_PROVIDER: openai
+      # GT_MODEL_URL: http://host.docker.internal:11434/v1
+      # GT_MODEL: gemma4:31b
+      # GT_MODEL_KEY: ""
+      # Or Claude:
+      # GT_MODEL_PROVIDER: anthropic
+      # GT_MODEL_KEY: sk-ant-...
