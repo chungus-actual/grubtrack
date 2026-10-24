@@ -47,6 +47,11 @@ Usage:
   python3 fooddb_sqlite.py set-cat --product <productId> --category dairy.yogurt
   python3 fooddb_sqlite.py sweep                        # re-resolve stores/products/categories
 
+  Recipe library (foodcore/recipes.py):
+  python3 fooddb_sqlite.py recipes-import --file ~/recipes [--source NAME] [--dry-run]
+      # Meal-Master, MasterCook, schema.org JSON / JSON-LD / HTML, Mealie, Paprika, GrubTrack JSON(L),
+      # a folder or a zip of any of them; duplicates (same title and ingredients) are skipped
+
 Notes:
 - Inventory rows are "current state": a restock merges into the existing row. Prices are NOT:
   every price written to a row is also recorded in the `purchases` ledger (database triggers),
@@ -623,7 +628,7 @@ def shop_set_done(con, sid, done=True):
 # ------------------------------------------------------------------ receipts & prices
 
 LEDGER_COMMANDS = {"receipt-add", "receipts", "receipt", "receipt-link", "prices", "spend", "stores",
-                   "categories", "set-cat", "sweep"}
+                   "categories", "set-cat", "sweep", "recipes-import"}
 
 
 def _load_json(args):
@@ -705,6 +710,22 @@ def _ledger_cmd(core, con, args):
         return {"ok": True}
     if cmd == "sweep":
         return ledger.sweep(con)
+    if cmd == "recipes-import":
+        import foodcore.recipes as rc
+        if not args.file:
+            raise SystemExit("recipes-import needs --file: a file, a folder, or a zip")
+        path = os.path.expanduser(args.file)
+        if not os.path.exists(path):
+            raise SystemExit(f"no such file or folder: {args.file}")
+        files = {}
+
+        def found():
+            from pathlib import Path
+            for f, r in rc.from_path(Path(path)):
+                files[f] = files.get(f, 0) + 1
+                yield r
+        rep = rc.import_recipes(con, found(), source=args.source, dry_run=bool(args.dry_run))
+        return {**rep, "files": len(files), "dryRun": bool(args.dry_run)}
     raise SystemExit(f"Unknown command: {cmd}")
 
 
@@ -774,6 +795,8 @@ def main():
     ap.add_argument("--product")
     ap.add_argument("--line")
     ap.add_argument("--item")
+    ap.add_argument("--source")
+    ap.add_argument("--dry-run", dest="dry_run", action="store_true")
     ap.add_argument("-h", "--help", action="store_true")
 
     args = ap.parse_args(expand_abbrevs(sys.argv[1:]))

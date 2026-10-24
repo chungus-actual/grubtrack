@@ -11,7 +11,7 @@ from . import config  # noqa: F401  (sets FOODDB_PATH + sys.path before the impo
 
 import fooddb_sqlite as fdb  # noqa: E402
 from foodcore import cat_label  # noqa: E402
-from foodcore import intel, ledger  # noqa: E402,F401
+from foodcore import intel, ledger, recipes  # noqa: E402,F401
 
 
 def connect() -> sqlite3.Connection:

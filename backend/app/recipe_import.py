@@ -6,12 +6,12 @@ without it, and pasted text, go to the configured model (or agent)."""
 from __future__ import annotations
 
 import html as htmllib
-import json
 import re
 
 import httpx
 
 from . import ai
+from .db import recipes
 
 CATEGORIES = ("dinner", "desserts", "breakfast", "lunch", "snacks", "drinks", "sides", "other")
 MAX_PAGE = 3_000_000
@@ -26,55 +26,9 @@ Leave a field "" if it isn't there. Copy ingredient amounts exactly. Never use e
 """
 
 
-def _iso_duration(v) -> str:
-    """PT1H30M -> '1h 30m', PT15M -> '15 min'; anything else passes through."""
-    s = str(v or "").strip()
-    m = re.fullmatch(r"P(?:\d+D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:\d+S)?", s)
-    if not m or not (m.group(1) or m.group(2)):
-        return s
-    h, mins = int(m.group(1) or 0), int(m.group(2) or 0)
-    if h:
-        return f"{h}h {mins}m" if mins else f"{h}h"
-    return f"{mins} min"
-
-
-def _text(v) -> str:
-    if isinstance(v, list):
-        v = v[0] if v else ""
-    if isinstance(v, dict):
-        v = v.get("name") or v.get("text") or ""
-    return htmllib.unescape(re.sub(r"<[^>]+>", "", str(v or ""))).strip()
-
-
-def _steps(v) -> str:
-    out = []
-
-    def walk(x):
-        if isinstance(x, str):
-            out.append(_text(x))
-        elif isinstance(x, list):
-            for y in x:
-                walk(y)
-        elif isinstance(x, dict):
-            if x.get("itemListElement"):
-                if x.get("name"):
-                    out.append(f"{_text(x['name']).rstrip(':')}:")
-                walk(x["itemListElement"])
-            else:
-                out.append(_text(x.get("text") or x.get("name")))
-    walk(v)
-    lines, n = [], 0
-    for s in (s for s in out if s):
-        if s.endswith(":"):
-            lines.append(s)   # a section heading ("For the sauce:")
-        else:
-            n += 1
-            lines.append(f"{n}. {s}")
-    return "\n".join(lines)
-
-
-def _category(v) -> str:
-    t = " ".join(_text(x) for x in (v if isinstance(v, list) else [v])).lower()
+def _category(cats: list[str]) -> str:
+    """schema.org recipeCategory words to the folders saved recipes go in."""
+    t = " ".join(cats).lower()
     for key, words in (("desserts", ("dessert", "cake", "cookie", "pie", "sweet")), ("breakfast", ("breakfast", "brunch")),
                        ("drinks", ("drink", "cocktail", "beverage", "smoothie")), ("sides", ("side",)),
                        ("snacks", ("snack", "appetizer", "starter")), ("lunch", ("lunch", "sandwich", "salad")),
@@ -85,30 +39,14 @@ def _category(v) -> str:
 
 
 def from_jsonld(page: str) -> dict | None:
-    """The first schema.org Recipe in the page's JSON-LD, as a draft."""
-    for block in re.findall(r"<script[^>]+application/ld\+json[^>]*>(.*?)</script>", page, re.S | re.I):
-        try:
-            data = json.loads(block.strip())
-        except ValueError:
-            continue
-        stack = [data]
-        while stack:
-            x = stack.pop(0)
-            if isinstance(x, list):
-                stack.extend(x)
-            elif isinstance(x, dict):
-                types = x.get("@type")
-                types = types if isinstance(types, list) else [types]
-                if "Recipe" in types:
-                    ings = [_text(i) for i in x.get("recipeIngredient") or x.get("ingredients") or []]
-                    return {
-                        "title": _text(x.get("name")), "cuisine": _text(x.get("recipeCuisine")),
-                        "servings": _text(x.get("recipeYield")), "prep_time": _iso_duration(x.get("prepTime")),
-                        "cook_time": _iso_duration(x.get("cookTime")), "category": _category(x.get("recipeCategory")),
-                        "ingredients": [i for i in ings if i], "instructions": _steps(x.get("recipeInstructions")),
-                    }
-                stack.extend(v for k, v in x.items() if k == "@graph" or isinstance(v, (list, dict)))
-    return None
+    """The first schema.org Recipe in the page's JSON-LD (the library importer's reader), as a draft."""
+    found = recipes.from_html(page)
+    if not found:
+        return None
+    r = found[0]
+    return {"title": r["title"], "cuisine": r["cuisine"], "servings": r["servings"], "prep_time": r["prep_time"],
+            "cook_time": r["cook_time"], "category": _category(r["categories"]), "ingredients": r["ingredients"],
+            "instructions": r["instructions"]}
 
 
 def page_text(page: str) -> str:

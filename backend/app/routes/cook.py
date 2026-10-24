@@ -3,6 +3,7 @@ imported library, and whether you can make a recipe with what's in the house."""
 
 from __future__ import annotations
 
+import asyncio
 import datetime as dt
 import json
 import re
@@ -10,68 +11,34 @@ from pathlib import Path
 from typing import Optional
 
 import httpx
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 
 from .. import ai, config, recipe_import
 from ..db import get_con
+from foodcore import recipes
 from foodcore.taxonomy import classify
 
 router = APIRouter(prefix="/api")
 
 # ------------------------------------------------------------------ recipe migrations
 
-TIME_BUCKET_SQL = """
-UPDATE bulk_recipes SET time_bucket = CASE
-  WHEN (instructions LIKE '%hours%' OR instructions LIKE '%overnight%' OR instructions LIKE '%slow cook%'
-        OR instructions LIKE '%all day%' OR instructions LIKE '%marinate%' OR instructions LIKE '%refrigerat%'
-        OR instructions LIKE '% rise%' OR instructions LIKE '%let stand%' OR instructions LIKE '%let rest%'
-        OR lower(title) LIKE '%roast%' OR lower(title) LIKE '%braised%' OR lower(title) LIKE '%slow%'
-        OR lower(title) LIKE '%overnight%') THEN 'long'
-  WHEN (length(instructions) < 400 AND instructions NOT LIKE '%minutes%' AND instructions NOT LIKE '%simmer%'
-        AND instructions NOT LIKE '%bake%') THEN 'quick'
-  ELSE 'medium' END
-WHERE time_bucket IS NULL
-"""
-
-
 def migrate_recipes(con) -> None:
-    """Once at startup (it used to run on every request): the library's derived columns and the
-    journal table."""
-    con.execute("""CREATE TABLE IF NOT EXISTS bulk_recipes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, slug TEXT UNIQUE NOT NULL, category TEXT,
-        cuisine TEXT, servings TEXT, ingredients TEXT, instructions TEXT, source_url TEXT,
-        source_site TEXT DEFAULT 'recipesource', imported_at TEXT NOT NULL)""")
-    cols = {r[1] for r in con.execute("PRAGMA table_info(bulk_recipes)")}
-    for col in ("time_bucket", "prep_time", "cook_time", "total_time", "protein_type", "cuisine_group", "dish_group"):
-        if col not in cols:
-            con.execute(f"ALTER TABLE bulk_recipes ADD COLUMN {col} TEXT")
-    con.execute(TIME_BUCKET_SQL)
+    """Once at startup: the library table (shared with the CLI's recipes-import), its derived columns,
+    and the journal table."""
+    recipes.ensure_table(con)
+    con.execute(recipes.TIME_BUCKET_SQL)
     con.execute("""CREATE TABLE IF NOT EXISTS recipe_journal (
         id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_slug TEXT NOT NULL, recipe_type TEXT NOT NULL DEFAULT 'personal',
         score INTEGER, tags TEXT, review TEXT, mods TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)""")
     con.execute("CREATE INDEX IF NOT EXISTS rj_slug ON recipe_journal(recipe_slug)")
-    for idx, col in (("bulk_recipes_slug", "slug"), ("bulk_recipes_category", "category"),
-                     ("bulk_recipes_time_bucket", "time_bucket"), ("bulk_recipes_protein", "protein_type"),
-                     ("bulk_recipes_cuisine", "cuisine_group"), ("bulk_recipes_dish", "dish_group")):
-        con.execute(f"CREATE INDEX IF NOT EXISTS {idx} ON bulk_recipes({col})")
     con.commit()
 
 
 # ------------------------------------------------------------------- can I make it?
 
 _ALWAYS = {"water", "salt", "black pepper", "ice", "spice"}
-_QTY = re.compile(r"^[\s\d/.,½¼¾⅓⅔-]*(?:\([^)]*\))?\s*(?:c|cups?|tbsp?|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|"
-                  r"pounds?|g|grams?|kg|ml|l|liters?|pinch|dash|cloves?|cans?|jars?|pkgs?|packages?|large|medium|"
-                  r"small|whole|slices?|sticks?|heads?|bunch(?:es)?|sprigs?|quarts?|pints?)?\.?\s+", re.I)
-
-
-def ingredient_generic(line: str) -> str | None:
-    text = _QTY.sub("", line or "").split(",")[0]
-    text = re.sub(r"\b(chopped|minced|diced|sliced|fresh|large|small|ground|to taste|optional|divided|softened|melted)\b",
-                  " ", text, flags=re.I)
-    c = classify(text)
-    return c["generic"]
+ingredient_generic = recipes.ingredient_generic
 
 
 def stock_generics(con) -> set[str]:
@@ -378,6 +345,25 @@ Instructions (excerpt): {(row['instructions'] or '')[:700]}"""
                  bucket, slug))
     con.commit()
     return {**result, "slug": slug}
+
+
+MAX_COLLECTION = 200 * 1024 * 1024
+
+
+@router.post("/recipes/import")
+async def import_collection(file: UploadFile = File(...), con=Depends(get_con)):
+    """A recipe collection into the library: the same reader as the CLI's recipes-import."""
+    data = await file.read()
+    if not data:
+        raise HTTPException(400, "The file is empty")
+    if len(data) > MAX_COLLECTION:
+        raise HTTPException(413, "That file is over 200 MB; import it with the CLI (recipes-import --file)")
+    name = file.filename or "upload"
+    rep = await asyncio.to_thread(lambda: recipes.import_recipes(con, recipes.from_bytes(name, data)))
+    if not rep["found"]:
+        raise HTTPException(400, "No recipes found in that file. GrubTrack reads Meal-Master, MasterCook, Paprika "
+                                 "and Mealie exports, schema.org recipe JSON or web pages, and zips of them.")
+    return rep
 
 
 @router.post("/recipes/bulk/revert")

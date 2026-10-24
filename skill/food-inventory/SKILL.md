@@ -234,6 +234,19 @@ python3 {baseDir}/scripts/fooddb_sqlite.py receipts                # recent trip
 - Say how much evidence there is: "bought 3 times, all off receipts" beats a bare number.
 - Unit prices (`last.unit` + `last.unitLabel`) compare sizes and brands: "58¢ an egg vs 22¢".
 
+### A recipe collection
+
+When someone sends a file of recipes (Meal-Master or MasterCook text, a Paprika or Mealie export, recipe
+JSON, a saved recipe web page, or a zip of them), save it and import it into the library:
+
+```bash
+python3 {baseDir}/scripts/fooddb_sqlite.py recipes-import --file /tmp/recipes.zip --dry-run   # what's in it
+python3 {baseDir}/scripts/fooddb_sqlite.py recipes-import --file /tmp/recipes.zip
+```
+
+Recipes with the same title and ingredients as one already there are skipped. Reply with how many were
+added and how many were already in the library. GrubTrack's Cook page ranks them by what's in the house.
+
 ### Categories
 
 Every row gets a department and category automatically (`dept`, `cat`, e.g. `dairy.yogurt`).

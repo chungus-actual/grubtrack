@@ -15,7 +15,7 @@ and where the money went.
 | Prices | Where each thing is cheaper, real shelf-price changes (a sale isn't a price change), your personal inflation rate, buying rhythms, and the full price book with a history chart per product |
 | Spend | Money out by month, department and store; every trip as a receipt you can check line by line; what got thrown away |
 | List | One shopping list with a price estimate per line, the cheaper store, and restock ideas from your buying rhythm |
-| Cook | Meal ideas from what's on hand (leading with what expires first), your recipes ranked by how much of each is already in the house |
+| Cook | Meal ideas from what's on hand (leading with what expires first), your recipes and an imported recipe library, ranked by how much of each is already in the house |
 
 Every receipt is checked against its printed total: lines plus tax must come to the total, to the
 cent, or GrubTrack tells you which way it's off. Products get a department and one of 91 categories
@@ -51,6 +51,22 @@ cd backend && ../.venv/bin/uvicorn main:app --port 8888
 
 GrubTrack has no login. Keep it on your home network, or put it behind your reverse proxy's
 authentication.
+
+## Recipes
+
+Two kinds, both ranked by how much of each recipe is already in the house:
+
+| | Where they live | How they get there |
+|---|---|---|
+| Your recipes | markdown files in `GT_RECIPES_DIR` (an Obsidian folder works) | Save a recipe on the Cook page: a link (read from the recipe data the page publishes), pasted text (read by the model), or typed in |
+| The library | the database, searchable by time, protein, cuisine and dish | Import recipes on the Cook page, or `recipes-import` on the CLI |
+
+The library importer reads Meal-Master and MasterCook text files, Paprika (`.paprikarecipes`) and Mealie
+exports, schema.org recipe JSON or saved recipe pages, GrubTrack's own JSON Lines
+(`{"title", "ingredients": [...], "instructions"}`), and zips or folders of any of them. Each recipe gets
+its protein, cuisine, dish type and time from its ingredients and categories, and a recipe already in
+the library (same title, same ingredients) is skipped, so importing the same file twice is safe.
+GrubTrack ships no recipe collection of its own.
 
 ## AI: a model, an agent, or both
 
@@ -128,6 +144,7 @@ python3 $S receipt-add --file receipt.json        # checked against the printed 
 python3 $S prices --q eggs                        # last price, per store, shelf change, store gap
 python3 $S spend --days 30
 python3 $S shop-add --name "oat milk"
+python3 $S recipes-import --file ~/Downloads/recipes.zip   # add --dry-run to see what's in it first
 ```
 
 `python3 $S --help` lists everything. The receipt JSON format is in the skill's `SKILL.md`.
@@ -175,7 +192,7 @@ python3 $S shop-add --name "oat milk"
 
 | Path | What |
 |---|---|
-| `skill/food-inventory/` | the agent skill: `SKILL.md`, the CLI (`scripts/fooddb_sqlite.py`) and `scripts/foodcore/` (schema, taxonomy, unit prices, receipt ledger, price analytics) |
+| `skill/food-inventory/` | the agent skill: `SKILL.md`, the CLI (`scripts/fooddb_sqlite.py`) and `scripts/foodcore/` (schema, taxonomy, unit prices, receipt ledger, price analytics, recipe import) |
 | `backend/app/` | FastAPI; `ai/` holds the model and agent providers |
 | `frontend/src/` | React 18 + Vite: `pages/` and `sheets/` (detail panels addressed by URL, `?open=product:<id>`) |
 | `tools/` | `install_skill.py`, `seed_demo.py` |

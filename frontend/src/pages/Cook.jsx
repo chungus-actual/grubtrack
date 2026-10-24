@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Search, Sparkles, Square } from 'lucide-react'
-import { get, post, stream } from '../lib/api'
+import { Search, Sparkles, Square, Upload } from 'lucide-react'
+import { get, post, stream, upload } from '../lib/api'
 import { useConfig } from '../lib/config'
 import { plainDashes, plural } from '../lib/format'
 import { useSheet } from '../components/Sheet'
@@ -142,6 +142,31 @@ function SaveRecipe() {
   )
 }
 
+const FORMATS = '.txt,.mmf,.mm,.mxp,.json,.jsonl,.jsonld,.html,.htm,.zip,.paprikarecipes,.paprikarecipe'
+
+function ImportCollection({ onDone }) {
+  const qc = useQueryClient()
+  const toast = useToast()
+  const [busy, setBusy] = useState(false)
+  const pick = async (file) => {
+    if (!file) return
+    setBusy(true)
+    try {
+      const r = await upload('/recipes/import', 'file', file, file.name)
+      qc.invalidateQueries({ queryKey: ['recipes'] })
+      qc.invalidateQueries({ queryKey: ['library'] })
+      toast(`${plural(r.added, 'recipe')} imported${r.duplicates ? `, ${r.duplicates.toLocaleString()} already in the library` : ''}`)
+      if (r.added) onDone()
+    } catch (e) { toast(e.message) } finally { setBusy(false) }
+  }
+  return (
+    <label className="btn btn--sm" title="Meal-Master, MasterCook, Paprika or Mealie exports, recipe JSON or web pages, or a zip of them">
+      <Upload aria-hidden="true" />{busy ? 'Importing' : 'Import recipes'}
+      <input type="file" accept={FORMATS} hidden disabled={busy} onChange={(e) => { pick(e.target.files?.[0]); e.target.value = '' }} />
+    </label>
+  )
+}
+
 export default function Cook() {
   const { open } = useSheet()
   const { recipes } = useConfig()
@@ -182,6 +207,7 @@ export default function Cook() {
             <Search aria-hidden="true" /><span className="sr-only">Search recipes</span>
             <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search recipes or ingredients" />
           </label>
+          <ImportCollection onDone={() => setTab('library')} />
         </div>
         {tab === 'library' && (
           <div className="toolbar">
@@ -198,7 +224,7 @@ export default function Cook() {
 
         {tab === 'mine' && (mine.isLoading ? <Loading /> : personal.length ? (
           <div className="list list--panel">{personal.map((r) => <RecipeRow key={r.slug} r={r} onOpen={() => open('recipe', r.slug)} />)}</div>
-        ) : <Empty title={q.trim() ? 'No recipes match' : 'No recipes yet'}>{q.trim() ? null : 'Save one from a link above, or point GT_RECIPES_DIR at a folder of markdown recipes.'}</Empty>)}
+        ) : <Empty title={q.trim() ? 'No recipes match' : 'No recipes yet'}>{q.trim() ? null : 'Save one from a link above, import a collection (Meal-Master, MasterCook, Paprika, Mealie or recipe JSON), or point GT_RECIPES_DIR at a folder of markdown recipes.'}</Empty>)}
 
         {tab === 'library' && (lib.isLoading ? <Loading label="Searching the library" /> : lib.error ? <ErrorBox error={lib.error} /> : (
           <>

@@ -177,3 +177,27 @@ def test_receipt_photo_to_saved_trip(client, monkeypatch):
     trip = next(t for t in client.get("/api/spend").json()["spend"]["trips"] if t["id"] == saved.json()["receiptId"])
     assert trip["reconciled"] and trip["total"] == 9.29
     assert client.get(f"/api/receipts/{trip['id']}").json()["imagePath"] == draft["image"]
+
+
+def test_import_a_recipe_collection(client):
+    import gzip
+    import io
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for name, ings, cats in (("Lemon Chicken", "2 lb chicken thighs\n2 lemons", ["Dinner"]),
+                                 ("Banana Bread", "3 bananas\n2 cups flour", ["Breads"])):
+            z.writestr(f"{name}.paprikarecipe", gzip.compress(json.dumps(
+                {"name": name, "ingredients": ings, "directions": "Cook it.", "categories": cats}).encode()))
+    before = client.get("/api/recipes").json()["libraryTotal"]
+    r = client.post("/api/recipes/import", files={"file": ("export.paprikarecipes", buf.getvalue(), "application/zip")})
+    assert r.status_code == 200 and r.json()["added"] == 2
+    assert client.get("/api/recipes").json()["libraryTotal"] == before + 2
+    hits = client.get("/api/recipes/bulk/search", params={"protein": "chicken"}).json()["recipes"]
+    assert [h["title"] for h in hits] == ["Lemon Chicken"]
+    baked = client.get("/api/recipes/bulk/search", params={"dish": "baked", "q": "banana"}).json()["recipes"]
+    assert baked[0]["title"] == "Banana Bread" and baked[0]["make"]["known"] >= 1
+    again = client.post("/api/recipes/import", files={"file": ("export.paprikarecipes", buf.getvalue(), "application/zip")})
+    assert again.json()["added"] == 0 and again.json()["duplicates"] == 2
+    bad = client.post("/api/recipes/import", files={"file": ("notes.txt", b"just some notes", "text/plain")})
+    assert bad.status_code == 400 and "Meal-Master" in bad.json()["detail"]
