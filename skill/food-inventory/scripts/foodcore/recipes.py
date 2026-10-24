@@ -92,13 +92,45 @@ _SEAFOOD = ("tuna", "salmon", "shrimp", "prawn", "crab", "lobster", "scallop", "
 _PROTEIN_ORDER = ("chicken", "beef", "pork", "seafood", "other_meat")
 
 
-def protein_of(title: str, ingredients: list[str]) -> str:
-    """The main protein: what the ingredient lines are, weighted toward the title. Broth, stock,
-    bouillon and fish sauce flavour a dish without making it a meat dish."""
+_DERIVED = re.compile(r"\b(broth|stock|bouillon|base|consomm[eé]|soup|fish sauce|oyster sauce|anchovy paste)\b")
+# When the classifier can't place a line (two ingredients run together, or a word it doesn't know),
+# the words themselves still say which animal it is.
+_MEAT_WORDS = (
+    ("chicken", re.compile(r"\b(chicken|hens?|poultry|fryers?|broilers?|capons?|cornish)\b")),
+    ("other_meat", re.compile(r"\b(turkey|duck|goose|lamb|mutton|goat|venison|bison|buffalo|rabbit|veal|quail|pheasant)\b")),
+    ("beef", re.compile(r"\b(beef|steaks?|hamburgers?|ground round|ground chuck|chuck roast|sirloin|brisket|meatballs?|"
+                        r"ground meat|stew meat|minced meat|ox ?tails?)\b")),
+    ("pork", re.compile(r"\b(pork|ham|bacon|sausages?|franks?|hot dogs?|prosciutto|pancetta|salami|pepperoni|chorizo|"
+                        r"kielbasa)\b")),
+    ("seafood", re.compile(r"\b(fish|shrimp|prawns?|crabs?|crab ?meat|crustaceans?|shellfish|seafood|lobsters?|scallops?|"
+                           r"clams?|mussels?|oysters?|squid|calamari|octopus|"
+                           r"cray ?fish|craw ?fish|anchov\w*|sardines?|tuna|salmon|cod|trout|catfish|tilapia|halibut|"
+                           r"haddock|mackerel|herring|snapper|swordfish|eel|roe|caviar)\b")),
+)
+_NOT_MEAT = re.compile(r"\b(sauce|seasoning|flavou?r(?:ed|ing)?|spice|rub|marinade|substitute|imitation|vegetarian|vegan)\b")
+# a title names the dish's meat unless it's about something else: "Dip for Chicken", "Chicken-Style
+# Noodle Soup", "Mock Turtle", "Orange "Beef""
+_TITLE_NOT_MEAT = re.compile(r'\b(for|style|mock|meatless|vegetarian|vegan|seasoning|marinade|rub|sauce|spice)\b|"')
+_DERIVED_ANIMAL = (("chicken", ("chicken",)), ("other_meat", ("turkey", "duck", "veal", "lamb")), ("beef", ("beef",)),
+                   ("pork", ("pork", "ham", "bacon", "lard")), ("seafood", ("fish", "clam", "shrimp", "anchov", "oyster",
+                                                                           "lobster", "crab", "dashi", "bonito")))
+
+
+def protein_of(title: str, ingredients: list[str], categories: Iterable[str] = ()) -> str:
+    """The main protein: what the ingredient lines are, weighted toward the title. Broth, stock and
+    fish sauce don't make a dish a chicken or fish dish, but they do keep it out of vegetarian: with no
+    other meat, a dish made with chicken stock is filed under chicken. A recipe filed as vegetarian is."""
+    if re.search(r"\b(vegetarian|vegan|meatless)\b", " ".join(categories).lower()):
+        return "vegetarian"
     score: dict[str, float] = {}
+    derived: dict[str, float] = {}
     for line in ingredients:
         low = line.lower()
-        if re.search(r"\b(broth|stock|bouillon|base|fish sauce|oyster sauce|gelatin|lard|drippings)\b", low):
+        if _DERIVED.search(low):
+            for kind, words in _DERIVED_ANIMAL:
+                if any(w in low for w in words):
+                    derived[kind] = derived.get(kind, 0) + 1
+                    break
             continue
         c = ingredient_class(line)
         cat, g = c["cat"], (c["generic"] or "")
@@ -115,6 +147,8 @@ def protein_of(title: str, ingredients: list[str]) -> str:
             kind = "seafood"
         elif cat == "meat.other":
             kind = "other_meat"
+        if not kind and not _NOT_MEAT.search(low):
+            kind = next((k for k, rx in _MEAT_WORDS if rx.search(low)), None)
         if kind:
             score[kind] = score.get(kind, 0) + 1
     t = (title or "").lower()
@@ -122,6 +156,11 @@ def protein_of(title: str, ingredients: list[str]) -> str:
                         ("pork", ("pork", "bacon", "ribs")), ("seafood", _SEAFOOD), ("other_meat", _OTHER_MEAT)):
         if any(re.search(rf"\b{w}", t) for w in words) and kind in score:
             score[kind] += 2
+    score = score or derived
+    if not score and not _TITLE_NOT_MEAT.search(t):
+        hit = next((k for k, rx in _MEAT_WORDS if rx.search(t)), None)   # "Chicken Salad" with "chcken breasts"
+        if hit:
+            score = {hit: 1}
     if not score:
         return "vegetarian"
     return max(_PROTEIN_ORDER, key=lambda k: (score.get(k, 0), -_PROTEIN_ORDER.index(k)))
@@ -137,10 +176,11 @@ _CUISINES = {
                  "basque", "icelandic", "finnish", "scandinavian", "european", "mediterranean"),
     "latin": ("mexican", "tex-mex", "caribbean", "cuban", "puerto ric", "jamaican", "colombian", "peruvian",
               "venezuelan", "argentin", "brazilian", "latin", "salvador", "chilean"),
-    "african_me": ("african", "egyptian", "ethiopian", "lebanese", "moroccan", "persian", "iranian", "turkish",
+    "african_me": ("africa", "egyptian", "ethiopian", "lebanese", "moroccan", "persian", "iranian", "turkish",
                    "armenian", "israeli", "middle east", "middle-east", "syrian", "tunisian", "nigerian"),
     "american": ("american", "southern", "cajun", "creole", "southwestern", "bbq", "barbecue", "new england",
                  "soul food", "californian", "midwest"),
+    "other": ("jewish", "kosher"),
 }
 
 
@@ -158,19 +198,51 @@ _DISHES = (
     ("breakfast", ("breakfast", "brunch", "pancake", "waffle", "omelet", "omelette", "granola", "french toast", "frittata")),
     ("baked", ("bread", "cookie", "cake", "pastry", "pastries", "pie", "brownie", "muffin", "roll", "biscuit", "bun",
                "scone", "bagel", "dessert", "tart", "cobbler", "cheesecake", "candy", "candies", "pudding", "frosting",
-               "sorbet", "ice cream", "fudge", "crisp", "baking", "baked goods")),
+               "sorbet", "sherbet", "ice cream", "fudge", "crisp", "baking", "baked goods", "chocolate", "mousse",
+               "trifle", "custard", "frozen-dessert", "frozen-yogurt")),
     ("sauce", ("sauce", "dressing", "condiment", "marinade", "rub", "salsa", "pesto", "jam", "jelly", "relish",
                "chutney", "preserve", "beverage", "drink", "cocktail", "smoothie", "dip", "gravy", "spice blend",
-               "seasoning")),
-    ("salad", ("salad", "side", "vegetable", "pilaf", "rice", "beans", "grain", "stuffing", "slaw")),
+               "seasoning", "spice", "oil", "vinegar", "butter", "cheese", "canning", "pickle")),
+    ("salad", ("salad", "side", "vegetable", "veg", "fgv", "fruit", "pilaf", "rice", "beans", "grain", "polenta",
+               "stuffing", "slaw", "potato")),
+)
+_MAIN_FIRST = ("main", "entree", "dinner", "supper")   # "dinner-pies" is dinner before it's pie
+
+
+_MAIN_CATS = ("main", "entree", "dinner", "supper", "poultry", "chicken", "beef", "pork", "lamb", "meat", "seafood",
+              "fish", "shellfish", "casserole", "pasta", "pizza", "sandwich", "burger", "game", "stir-fry", "crockpot")
+
+# A title only decides when the category says nothing, and only through words that can't mean a main:
+# "Chicken in Mustard Sauce", "Chicken Pot Pie" and "Crab Cakes" are dinners.
+_TITLE_DISHES = (
+    ("soup", re.compile(r"\b(soups?|stews?|chowders?|bisques?|gumbos?|chil[il]i|pho|ramen|borscht|gazpacho)\b")),
+    ("breakfast", re.compile(r"\b(pancakes?|waffles?|granola|omelett?e?s?|frittatas?|french toast|breakfast|brunch)\b")),
+    ("salad", re.compile(r"\b(salads?|slaws?|coleslaw|pilafs?)\b")),
+    ("sauce", re.compile(r"^(?!.*\b(?:with|in|on)\b)(?:.*\b(dressings?|vinaigrettes?|marinades?|salsas?|pestos?|chutneys?|"
+                         r"relish(?:es)?|jams?|jell(?:y|ies)|gravy|gravies|rubs?|dips?|spreads?|syrups?|seasonings?|"
+                         r"smoothies?|cocktails?|punch|lemonade|liqueurs?)\b|(?!.*\band\b).*\bsauces?$)")),
+    ("baked", re.compile(r"\b(cookies?|brownies?|muffins?|cupcakes?|cheesecakes?|scones?|biscotti|fudge|cakes?|pies?|"
+                         r"tarts?|cobblers?|crisps?|breads?|rolls?|buns?|biscuits?|bars|pastr(?:y|ies)|puddings?|"
+                         r"strudels?|torte|candy|candies|truffles?)\b")),
 )
 
 
-def dish_of(title: str, categories: list[str]) -> str:
-    for text in (" ".join(categories).lower(), (title or "").lower()):   # what it says it is, then its name
-        for group, words in _DISHES:
-            if any(re.search(rf"\b{w}(?:e?s)?\b", text) for w in words):
-                return group
+def dish_of(title: str, categories: list[str], protein: str | None = None) -> str:
+    """Soup, breakfast, salad (and sides), sauce (and drinks), baked (and desserts), or main."""
+    cats = " ".join(categories).lower()
+    if any(re.search(rf"\b{w}(?:e?s)?\b", cats) for w in _MAIN_FIRST):
+        return "main"
+    for group, words in _DISHES:
+        if any(re.search(rf"\b{w}(?:e?s)?\b", cats) for w in words):
+            return group
+    if any(re.search(rf"\b{w}(?:e?s)?\b", cats) for w in _MAIN_CATS):
+        return "main"
+    t = (title or "").lower().strip()
+    for group, pattern in _TITLE_DISHES:
+        if pattern.search(t):
+            if group == "baked" and protein not in (None, "vegetarian"):
+                continue   # a pie, roll or cake with meat or fish in it is dinner
+            return group
     return "main"
 
 
@@ -581,7 +653,8 @@ def import_recipes(con: sqlite3.Connection, recipes: Iterable[dict], source: str
             slug, n = f"{base}-{n}", n + 1
         used.add(slug)
         cats = r.get("categories") or []
-        protein, cuisine, dish = protein_of(r["title"], ings), cuisine_of(r.get("cuisine", ""), cats), dish_of(r["title"], cats)
+        protein = protein_of(r["title"], ings, cats)
+        cuisine, dish = cuisine_of(r.get("cuisine", ""), cats), dish_of(r["title"], cats, protein)
         report["groups"][dish] = report["groups"].get(dish, 0) + 1
         rows.append((r["title"][:200], slug, (cats[0].lower() if cats else dish), r.get("cuisine") or "",
                      r.get("servings") or "", json.dumps(ings), r.get("instructions") or "", r.get("source") or "",
@@ -596,3 +669,38 @@ def import_recipes(con: sqlite3.Connection, recipes: Iterable[dict], source: str
                 " dish_group) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
             con.execute(TIME_BUCKET_SQL)
     return report
+
+
+LABELS = ("protein_type", "cuisine_group", "dish_group")
+
+
+def relabel(con: sqlite3.Connection, dry_run: bool = False) -> dict:
+    """Re-derive every library recipe's protein, cuisine and dish from its ingredients and category with
+    the current rules (recipes imported before the rules changed keep their old labels otherwise)."""
+    ensure_table(con)
+    rows = con.execute("SELECT id, title, category, cuisine, ingredients, protein_type, cuisine_group, dish_group"
+                       " FROM bulk_recipes").fetchall()
+    changes, moves = [], {k: {} for k in LABELS}
+    after = {k: {} for k in LABELS}
+    for rid, title, category, cuisine, ings, *old in rows:
+        try:
+            lines = json.loads(ings or "[]")
+        except ValueError:
+            lines = []
+        cats = [category] if category else []
+        protein = protein_of(title, lines, cats)
+        new = (protein, cuisine_of(cuisine or "", cats), dish_of(title, cats, protein))
+        for k, o, n in zip(LABELS, old, new):
+            after[k][n or "none"] = after[k].get(n or "none", 0) + 1
+            if o != n:
+                move = f"{o or 'none'} -> {n or 'none'}"
+                moves[k][move] = moves[k].get(move, 0) + 1
+        if tuple(old) != new:
+            changes.append((*new, rid))
+    if not dry_run and changes:
+        with con:
+            con.executemany("UPDATE bulk_recipes SET protein_type = ?, cuisine_group = ?, dish_group = ? WHERE id = ?",
+                            changes)
+    top = {k: dict(sorted(v.items(), key=lambda kv: -kv[1])[:10]) for k, v in moves.items()}
+    return {"recipes": len(rows), "changed": len(changes), "dryRun": dry_run, "moves": top,
+            "after": {k: dict(sorted(v.items(), key=lambda kv: -kv[1])) for k, v in after.items()}}

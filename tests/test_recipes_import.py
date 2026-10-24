@@ -191,7 +191,19 @@ def test_json_shapes():
 
 def test_filters():
     assert rc.protein_of("Chicken Thighs With Lemon", ["8 Bone-in chicken thighs", "1 tbsp chopped dill"]) == "chicken"
-    assert rc.protein_of("Quick Tomato Soup", ["1 can crushed tomatoes", "1 cup chicken broth"]) == "vegetarian"
+    # stock keeps a dish out of vegetarian, but only decides when there's no other meat
+    assert rc.protein_of("Quick Tomato Soup", ["1 can crushed tomatoes", "1 cup chicken broth"]) == "chicken"
+    assert rc.protein_of("Beef Stew", ["2 lb beef chuck", "2 cups chicken stock"]) == "beef"
+    assert rc.protein_of("Vegetable Soup", ["4 carrots", "4 cups vegetable broth"]) == "vegetarian"
+    # from the 41k-recipe library: words the classifier doesn't know, typos, titles, categories
+    assert rc.protein_of("Chili", ["1 lb Ground meat", "1 lg Onion"]) == "beef"
+    assert rc.protein_of("Ox Tail Stew", ["1 1/2 lb ox tails"]) == "beef"
+    assert rc.protein_of("Crabapple Pickles", ["7 lb Crabapples", "7 c sugar"]) == "vegetarian"
+    assert rc.protein_of("Hamburger Casserole", ["1 lb Hamburger                          12 oz Can corn"]) == "beef"
+    assert rc.protein_of("Cobb Chicken Salad", ["4 barbecued chcken breasts", "2 avocados"]) == "chicken"
+    assert rc.protein_of("Spicy Peanut Dip for Chicken", ["1 cup peanut butter"]) == "vegetarian"
+    assert rc.protein_of('Orange "Beef" With Broccoli', ["1 lb seitan"], ["vegetarian"]) == "vegetarian"
+    assert rc.protein_of("Grape Bread", ["4 c flour", "1/2 c Lard, shortening, or butter"]) == "vegetarian"
     assert rc.protein_of("Shrimp & Grits", ["1 lb shrimp, peeled", "4 slices bacon", "1 cup grits"]) == "seafood"
     assert rc.protein_of("Cheesecake", ["2 cups graham cracker crumbs", "16 oz cream cheese"]) == "vegetarian"
     assert rc.protein_of("Lamb Stew", ["2 lb lamb shoulder", "4 carrots"]) == "other_meat"
@@ -200,6 +212,13 @@ def test_filters():
     assert rc.cuisine_of("Southern", []) == "american" and rc.cuisine_of("", ["Weeknight"]) is None
     assert rc.dish_of("Chicken Pieces", ["Main dish"]) == "main"          # "pieces" is not "pie"
     assert rc.dish_of("Apple Pie", []) == "baked" and rc.dish_of("x", ["Soups"]) == "soup"
+    assert rc.dish_of("Chicken Pot Pie", [], "chicken") == "main" and rc.dish_of("Crab Cakes", [], "seafood") == "main"
+    assert rc.dish_of("Chicken in Mustard Sauce", []) == "main" and rc.dish_of("Spaghetti Sauce", []) == "sauce"
+    assert rc.dish_of("Pasta with Tomato Sauce", []) == "main" and rc.dish_of("Cabbage Rolls", ["main-dishes"]) == "main"
+    assert rc.dish_of("Chicken Mushroom Pie", ["dinner-pies"], "chicken") == "main"
+    assert rc.dish_of("Mushroom Caps With Pesto", ["appetizers"]) == "main" and rc.dish_of("Basil Pesto", []) == "sauce"
+    assert rc.dish_of("Apple Butter", ["butter"]) == "sauce" and rc.dish_of("Chocolate Mousse", ["mousse"]) == "baked"
+    assert rc.cuisine_of("", ["africa"]) == "african_me" and rc.cuisine_of("", ["jewish"]) == "other"
     assert rc.time_bucket({"total_time": "1h 30m"}) == "long" and rc.time_bucket({"prep_time": "10 min"}) == "quick"
     assert rc.time_bucket({}) is None
 
@@ -234,3 +253,23 @@ def test_import_a_folder_twice(tmp_path, cli, dbpath):
 def test_import_needs_a_real_path(cli):
     r = cli("recipes-import", "--file", "/nope/nothing", ok=False)
     assert r.returncode != 0 and "no such file" in r.stderr
+
+
+def test_relabel_rewrites_old_labels(tmp_path, cli, dbpath):
+    (tmp_path / "r.jsonl").write_text(json.dumps({"title": "Basic Stock For Soups", "categories": ["Soups"],
+                                                  "ingredients": ["3 lb chicken backs", "1 onion"]}) + "\n"
+                                      + json.dumps({"title": "Graham Cracker Crust", "categories": ["Pies"],
+                                                    "ingredients": ["1 1/2 cups graham cracker crumbs", "6 tbsp butter"]}) + "\n")
+    cli("recipes-import", "--file", tmp_path / "r.jsonl")
+    con = sqlite3.connect(dbpath)
+    con.execute("UPDATE bulk_recipes SET protein_type = 'pork', cuisine_group = 'american', dish_group = 'main'")
+    con.commit()
+    dry = json.loads(cli("recipes-relabel", "--dry-run").stdout)
+    assert dry["changed"] == 2 and dry["moves"]["protein_type"] == {"pork -> chicken": 1, "pork -> vegetarian": 1}
+    assert con.execute("SELECT COUNT(*) FROM bulk_recipes WHERE protein_type = 'pork'").fetchone()[0] == 2
+    out = json.loads(cli("recipes-relabel").stdout)
+    assert out["changed"] == 2 and out["after"]["dish_group"] == {"soup": 1, "baked": 1}
+    rows = dict(con.execute("SELECT title, protein_type || '/' || coalesce(cuisine_group, 'none') FROM bulk_recipes"))
+    assert rows == {"Basic Stock For Soups": "chicken/none", "Graham Cracker Crust": "vegetarian/none"}
+    assert json.loads(cli("recipes-relabel").stdout)["changed"] == 0
+    con.close()

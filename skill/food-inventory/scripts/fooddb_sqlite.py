@@ -51,6 +51,7 @@ Usage:
   python3 fooddb_sqlite.py recipes-import --file ~/recipes [--source NAME] [--dry-run]
       # Meal-Master, MasterCook, schema.org JSON / JSON-LD / HTML, Mealie, Paprika, GrubTrack JSON(L),
       # a folder or a zip of any of them; duplicates (same title and ingredients) are skipped
+  python3 fooddb_sqlite.py recipes-relabel [--dry-run]   # re-derive protein/cuisine/dish with the current rules
 
 Notes:
 - Inventory rows are "current state": a restock merges into the existing row. Prices are NOT:
@@ -628,7 +629,7 @@ def shop_set_done(con, sid, done=True):
 # ------------------------------------------------------------------ receipts & prices
 
 LEDGER_COMMANDS = {"receipt-add", "receipts", "receipt", "receipt-link", "prices", "spend", "stores",
-                   "categories", "set-cat", "sweep", "recipes-import"}
+                   "categories", "set-cat", "sweep", "recipes-import", "recipes-relabel"}
 
 
 def _load_json(args):
@@ -726,6 +727,9 @@ def _ledger_cmd(core, con, args):
                 yield r
         rep = rc.import_recipes(con, found(), source=args.source, dry_run=bool(args.dry_run))
         return {**rep, "files": len(files), "dryRun": bool(args.dry_run)}
+    if cmd == "recipes-relabel":
+        import foodcore.recipes as rc
+        return rc.relabel(con, dry_run=bool(args.dry_run))
     raise SystemExit(f"Unknown command: {cmd}")
 
 
