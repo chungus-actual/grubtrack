@@ -24,5 +24,6 @@ USER grubtrack
 VOLUME /data
 EXPOSE 8888
 WORKDIR /app/backend
-HEALTHCHECK --interval=60s --timeout=5s CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/api/build', timeout=4)"
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888"]
+HEALTHCHECK --interval=60s --timeout=5s CMD ["python3", "/app/backend/healthcheck.py"]
+# HTTPS when GT_TLS_CERT and GT_TLS_KEY name a certificate and key (mount them read-only)
+CMD ["python3", "serve.py"]

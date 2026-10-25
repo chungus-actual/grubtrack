@@ -3,13 +3,16 @@
 
   python3 tools/install_skill.py openclaw --db ~/grubtrack/data/food.db
   python3 tools/install_skill.py hermes   --db ~/grubtrack/data/food.db --local my-house.md
+  python3 tools/install_skill.py openclaw --url https://nas.lan:8888 --token "$GT_API_TOKEN" --ca house-ca.pem
 
 What it does:
   1. archives any copy already at the destination (a .tgz in --backup-dir)
   2. copies skill/food-inventory/ there
   3. writes the folder's absolute path in place of {baseDir}, so the agent runs the right script
      without having to work out where it lives
-  4. pins the database in grubtrack.json, so the agent's CLI and GrubTrack open the same food.db
+  4. pins the database in grubtrack.json, so the agent's CLI and GrubTrack open the same food.db; or,
+     with --url, points the CLI at a GrubTrack server (another machine, a container), where every
+     command then runs
   5. adds your household notes as LOCAL.md (names, where to confirm, house rules), if given
   6. runs `init` against the pinned database (creates or migrates it; safe on a live one)
 
@@ -45,6 +48,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("harness", choices=sorted(DEST))
     ap.add_argument("--db", help="food.db the agent should use (default: the CLI's own lookup)")
+    ap.add_argument("--url", help="a GrubTrack server to send every command to, instead of a local food.db")
+    ap.add_argument("--token", help="that server's GT_API_TOKEN")
+    ap.add_argument("--ca", help="CA certificate that signed the server's HTTPS certificate, if it isn't public")
     ap.add_argument("--dest", help="skill folder to install into (default: %s)" % ", ".join(f"{k}: {v}" for k, v in DEST.items()))
     ap.add_argument("--local", help="household notes to install as LOCAL.md")
     ap.add_argument("--backup-dir", default="~/.local/share/grubtrack/skill-backups")
@@ -74,7 +80,15 @@ def main() -> int:
 
     for name, data in kept.items():
         (dest / name).write_bytes(data)
-    if a.db:
+    if a.url:
+        pin = {"url": a.url.rstrip("/")}
+        if a.token:
+            pin["token"] = a.token
+        if a.ca:
+            pin["ca"] = Path(os.path.expanduser(a.ca)).resolve().as_posix()
+        (dest / "grubtrack.json").write_text(json.dumps(pin, indent=2) + "\n", encoding="utf-8")
+        os.chmod(dest / "grubtrack.json", 0o600)   # it can hold the API token
+    elif a.db:
         db = Path(os.path.expanduser(a.db)).resolve()
         (dest / "grubtrack.json").write_text(json.dumps({"db": db.as_posix()}, indent=2) + "\n", encoding="utf-8")
     if a.local:
@@ -90,7 +104,8 @@ def main() -> int:
         print(f"installed to {dest}, but `init` failed", file=sys.stderr)
         return 1
     print(f"installed: {dest}")
-    print(f"database:  {json.loads(where.stdout)['db']}")
+    w = json.loads(where.stdout)
+    print(f"server:    {w['server']}" if w.get("remote") else f"database:  {w['db']}")
     if (dest / "LOCAL.md").exists():
         print("household notes: LOCAL.md")
     print(NEXT[a.harness])

@@ -27,7 +27,10 @@ who, where to confirm, house conventions) and wins where it disagrees with this 
 - The CLI: `python3 {baseDir}/scripts/fooddb_sqlite.py`. Always go through it; never open the
   database with your own SQL and never guess flags (`--help` lists them).
 - The database: `python3 {baseDir}/scripts/fooddb_sqlite.py where` prints the `food.db` path and the
-  `images/` folder beside it.
+  `images/` folder beside it, or the GrubTrack server the commands go to. When GrubTrack runs on
+  another machine, every command runs there with the same arguments and output, and the files a
+  command names (`--file`, a photo's path inside the JSON) are uploaded with it. If it prints
+  `Can't reach GrubTrack`, nothing was saved: say so, and don't claim it was logged.
 - Schema: `{baseDir}/references/SCHEMA.md`. Session behaviour: `{baseDir}/SESSION_RULES.md`.
 
 ## Workflow: when someone sends food photos

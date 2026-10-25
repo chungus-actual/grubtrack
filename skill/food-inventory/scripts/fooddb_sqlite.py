@@ -47,6 +47,11 @@ Usage:
   python3 fooddb_sqlite.py set-cat --product <productId> --category dairy.yogurt
   python3 fooddb_sqlite.py sweep                        # re-resolve stores/products/categories
 
+  Another machine's GrubTrack (foodcore/remote.py): with a URL in grubtrack.json or GRUBTRACK_URL,
+  every command runs on that server, with the files it names uploaded alongside.
+  python3 fooddb_sqlite.py snapshot [--scope core|full] [--max-age 60]   # a readable copy of the db
+  python3 fooddb_sqlite.py journal-add --slug pad-thai --score 8 --review "..." [--type freeform] [--tags a,b]
+
   Recipe library (foodcore/recipes.py):
   python3 fooddb_sqlite.py recipes-import --file ~/recipes [--source NAME] [--dry-run]
       # Meal-Master, MasterCook, schema.org JSON / JSON-LD / HTML, Mealie, Paprika, GrubTrack JSON(L),
@@ -93,6 +98,25 @@ def default_db_path() -> str:
 
 DB_PATH = default_db_path()
 ROOT = os.path.dirname(DB_PATH)
+
+
+def _remote():
+    try:
+        from foodcore import remote
+    except Exception as e:  # pragma: no cover - a broken foodcore must not stop local logging
+        print(f"warning: foodcore unavailable ({e}); using the local database", file=sys.stderr)
+        return None
+    return remote.config(SKILL_DIR)
+
+
+def readable_db(scope: str = "core", max_age: float = 60) -> str:
+    """A path code with its own SQL can open read-only: the local food.db, or a fresh copy of a
+    GrubTrack server's (see foodcore/remote.py). Never write to it."""
+    r = _remote()
+    if not r:
+        return DB_PATH
+    from foodcore import remote
+    return remote.snapshot(r, scope=scope, max_age=max_age)
 
 
 def now_iso_local():
@@ -629,7 +653,8 @@ def shop_set_done(con, sid, done=True):
 # ------------------------------------------------------------------ receipts & prices
 
 LEDGER_COMMANDS = {"receipt-add", "receipts", "receipt", "receipt-link", "prices", "spend", "stores",
-                   "categories", "set-cat", "sweep", "recipes-import", "recipes-relabel"}
+                   "categories", "set-cat", "sweep", "recipes-import", "recipes-relabel",
+                   "journal-add"}
 
 
 def _load_json(args):
@@ -727,6 +752,13 @@ def _ledger_cmd(core, con, args):
                 yield r
         rep = rc.import_recipes(con, found(), source=args.source, dry_run=bool(args.dry_run))
         return {**rep, "files": len(files), "dryRun": bool(args.dry_run)}
+    if cmd == "journal-add":
+        import foodcore.recipes as rc
+        if not args.slug:
+            raise SystemExit("journal-add needs --slug")
+        score = int(args.score) if args.score not in (None, "") else None
+        tags = [t.strip() for t in (args.tags or "").split(",") if t.strip()]
+        return rc.journal_add(con, args.slug, args.type or "freeform", score, tags, args.review or "")
     if cmd == "recipes-relabel":
         import foodcore.recipes as rc
         return rc.relabel(con, dry_run=bool(args.dry_run))
@@ -756,6 +788,10 @@ def expand_abbrevs(argv):
 
 
 def main():
+    remote = _remote()
+    if remote and len(sys.argv) > 1 and sys.argv[1] not in ("-h", "--help", "snapshot", "where"):
+        from foodcore import remote as rm
+        sys.exit(rm.run(remote, sys.argv[1:], SKILL_DIR))
     ap = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
     ap.add_argument("cmd", nargs="?")
     ap.add_argument("--json")
@@ -801,6 +837,13 @@ def main():
     ap.add_argument("--item")
     ap.add_argument("--source")
     ap.add_argument("--dry-run", dest="dry_run", action="store_true")
+    ap.add_argument("--scope", default="core")
+    ap.add_argument("--max-age", dest="max_age", type=float, default=60)
+    ap.add_argument("--slug")
+    ap.add_argument("--type")
+    ap.add_argument("--score")
+    ap.add_argument("--tags")
+    ap.add_argument("--review")
     ap.add_argument("-h", "--help", action="store_true")
 
     args = ap.parse_args(expand_abbrevs(sys.argv[1:]))
@@ -810,8 +853,15 @@ def main():
         return
 
     if args.cmd == "where":
-        print(json.dumps({"db": DB_PATH, "exists": os.path.exists(DB_PATH),
-                          "images": os.path.join(os.path.dirname(DB_PATH), "images")}, indent=2))
+        if remote:
+            print(json.dumps({"server": remote["url"], "remote": True}, indent=2))
+        else:
+            print(json.dumps({"db": DB_PATH, "exists": os.path.exists(DB_PATH),
+                              "images": os.path.join(os.path.dirname(DB_PATH), "images")}, indent=2))
+        return
+
+    if args.cmd == "snapshot":
+        print(json.dumps({"path": readable_db(args.scope, args.max_age), "remote": bool(remote)}, indent=2))
         return
 
     con = connect()

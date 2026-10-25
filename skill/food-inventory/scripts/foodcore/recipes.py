@@ -64,6 +64,25 @@ def ensure_table(con: sqlite3.Connection) -> None:
         con.execute(f"CREATE INDEX IF NOT EXISTS {idx} ON bulk_recipes({col})")
 
 
+def ensure_journal(con: sqlite3.Connection) -> None:
+    """How a recipe went: one row per time it was made (GrubTrack's Cook page shows the latest)."""
+    con.execute("""CREATE TABLE IF NOT EXISTS recipe_journal (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_slug TEXT NOT NULL, recipe_type TEXT NOT NULL DEFAULT 'personal',
+        score INTEGER, tags TEXT, review TEXT, mods TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)""")
+    con.execute("CREATE INDEX IF NOT EXISTS rj_slug ON recipe_journal(recipe_slug)")
+
+
+def journal_add(con: sqlite3.Connection, slug: str, rtype: str = "freeform", score: int | None = None,
+                tags: list[str] | None = None, review: str = "") -> dict:
+    ensure_journal(con)
+    stamp = dt.datetime.now().astimezone().isoformat(timespec="seconds")
+    with con:
+        cur = con.execute("INSERT INTO recipe_journal (recipe_slug, recipe_type, score, tags, review, mods, created_at,"
+                          " updated_at) VALUES (?,?,?,?,?,?,?,?)",
+                          (slug, rtype, score, json.dumps(tags or []), review, None, stamp, stamp))
+    return {"id": cur.lastrowid, "slug": slug, "type": rtype}
+
+
 # ------------------------------------------------------- ingredient lines
 
 _QTY = re.compile(r"^[\s\d/.,½¼¾⅓⅔-]*(?:\([^)]*\))?\s*(?:c|cups?|tbsp?|tablespoons?|tsp|teaspoons?|oz|ounces?|lbs?|"

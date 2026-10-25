@@ -128,8 +128,21 @@ the database so the agent and the web app open the same `food.db`. `--local` add
 `LOCAL.md`, which the skill reads first: who's who, which chat to confirm in, house rules. Re-running it
 updates the skill and keeps the pin and the notes; the previous copy is archived.
 
-Run the agent on the same machine as the database. SQLite is shared safely between processes on one
-host, not over a network share.
+### When GrubTrack runs somewhere else
+
+GrubTrack in a container on a NAS and the agent on your desktop is the usual setup, and SQLite can't be
+shared over a network. So the skill's CLI can send every command to GrubTrack instead: same commands,
+same output, and the files a command names (a receipt JSON, a recipe collection, the photo a payload
+points at) are uploaded with it.
+
+```bash
+python3 tools/install_skill.py openclaw --url https://nas.lan:8888 --token "$GT_API_TOKEN" --ca house-ca.pem
+```
+
+GrubTrack runs the command against its own database (`POST /api/cli`) and returns what the CLI would
+have printed. Scripts that read the database with their own SQL can use a fresh read-only copy:
+`fooddb_sqlite.py snapshot` prints its path (`GET /api/export/db`; `--scope core` leaves out the recipe
+library). Set `GT_API_TOKEN` on the server so only the agent can do this.
 
 ## The CLI
 
@@ -145,6 +158,8 @@ python3 $S prices --q eggs                        # last price, per store, shelf
 python3 $S spend --days 30
 python3 $S shop-add --name "oat milk"
 python3 $S recipes-import --file ~/Downloads/recipes.zip   # add --dry-run to see what's in it first
+python3 $S journal-add --slug pad-thai --score 8 --review "Better with more lime"
+python3 $S snapshot                                # a read-only copy for your own SQL
 ```
 
 `python3 $S --help` lists everything. The receipt JSON format is in the skill's `SKILL.md`.
@@ -174,6 +189,10 @@ python3 $S recipes-import --file ~/Downloads/recipes.zip   # add --dry-run to se
 | `GT_AI_STYLE` | plain markdown, no em dashes | style line added to every prompt |
 | `GT_MEAL_NOTES` | none | household preferences added to meal-idea prompts |
 | `GT_SWEEP_SECONDS` | `30` | how often rows written by other tools get categorized and priced |
+| `GT_API_TOKEN` | none | bearer token required by `/api/cli` and `/api/export/db` (the agent's CLI sends it) |
+| `GT_BACKUPS` | `14` | nightly copies of `food.db` kept in `$GT_DATA/backups` (`0` turns them off) |
+| `GT_TLS_CERT`, `GT_TLS_KEY` | none | serve HTTPS with this certificate and key |
+| `GT_PORT` | `8888` | port |
 | `TZ` | server's | "today" for expiry dates is the server's date |
 
 ## How the data works

@@ -35,6 +35,8 @@ RECIPES_DIR = _path("GT_RECIPES_DIR", DATA_DIR / "recipes")   # markdown recipes
 RECIPES_WRITE = _flag("GT_RECIPES_WRITE", True)
 STATIC_DIR = _path("GT_STATIC", REPO / "frontend" / "dist")
 SWEEP_SECONDS = int(_env("GT_SWEEP_SECONDS", "30"))
+API_TOKEN = _env("GT_API_TOKEN")                 # bearer token for /api/cli and /api/export/db
+BACKUPS = int(_env("GT_BACKUPS", "14"))          # nightly copies of food.db kept in DATA_DIR/backups (0 = none)
 
 # ---- the model: one direct LLM endpoint for reading receipts and recipes, and for chat when no
 # agent is set. "openai" is any OpenAI-compatible server (OpenAI, Ollama, LM Studio, vLLM,

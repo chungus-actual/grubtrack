@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import ai, config
 from .db import connect, fdb, ledger
-from .routes import cook, pantry, prices, shopping, spend
+from .routes import cook, pantry, prices, remote, shopping, spend
 
 log = logging.getLogger("grubtrack")
 
@@ -29,13 +29,40 @@ def _build_id() -> str:
 
 
 async def _sweeper():
-    """Writes that bypass the CLI (another tool's raw SQL) still get resolved within a beat."""
+    """Writes that bypass the CLI (another tool's raw SQL) still get resolved within a beat, and
+    once a day food.db is copied into backups/."""
     while True:
         await asyncio.sleep(config.SWEEP_SECONDS)
         try:
             await asyncio.to_thread(_sweep_once)
+            await asyncio.to_thread(backup_once)
         except Exception as e:  # pragma: no cover
             log.warning("sweep failed: %s", e)
+
+
+def backup_once(today: str | None = None) -> Path | None:
+    """Today's copy of food.db (the SQLite online backup, safe while it's being written), keeping
+    the newest GT_BACKUPS. Nothing when today's exists or backups are off."""
+    if config.BACKUPS <= 0 or not config.DB_PATH.exists():
+        return None
+    import datetime as dt
+    import sqlite3
+    folder = config.DATA_DIR / "backups"
+    dest = folder / f"food-{today or dt.date.today().isoformat()}.db"
+    if dest.exists():
+        return None
+    folder.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_suffix(".tmp")
+    src, out = sqlite3.connect(str(config.DB_PATH), timeout=15), sqlite3.connect(str(tmp))
+    try:
+        src.backup(out)
+    finally:
+        out.close()
+        src.close()
+    tmp.replace(dest)
+    for old in sorted(folder.glob("food-*.db"))[:-config.BACKUPS]:
+        old.unlink()
+    return dest
 
 
 def _sweep_once():
@@ -48,10 +75,15 @@ def _sweep_once():
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI):
+    config.DATA_DIR.mkdir(parents=True, exist_ok=True)   # a first run from source has no data folder yet
     con = connect()
     try:
         fdb.init_db(con)          # inventory schema + foodcore migration
         cook.migrate_recipes(con)
+        try:
+            backup_once()
+        except Exception as e:
+            log.warning("backup failed: %s", e)
         try:
             ledger.sweep(con)
         except Exception as e:    # a bad row must never keep the site from starting
@@ -64,7 +96,8 @@ async def lifespan(app: FastAPI):
     task.cancel()
 
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
+IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".pdf"}
 app = FastAPI(title="GrubTrack", version=VERSION, lifespan=lifespan)
 
 
@@ -77,7 +110,7 @@ async def stamp(request: Request, call_next):
     return resp
 
 
-for r in (pantry.router, prices.router, spend.router, shopping.router, cook.router):
+for r in (pantry.router, prices.router, spend.router, shopping.router, cook.router, remote.router):
     app.include_router(r)
 
 
@@ -105,10 +138,14 @@ async def health():
 @app.get("/api/images/{img_path:path}")
 def image(img_path: str):
     """Item and receipt photos. Paths are relative to the data folder (or GT_MEDIA_ROOT, where an agent
-    records them relative to its workspace), and nothing outside those two folders is served."""
+    records them relative to its workspace); a path from another machine's layout falls back to its
+    file name in images/. Only image files, and nothing outside those folders, is served."""
     clean = img_path.lstrip("/")
+    if Path(clean).suffix.lower() not in IMAGE_TYPES:
+        raise HTTPException(404, "Image not found")
     roots = [config.DATA_DIR.resolve(), config.MEDIA_ROOT.resolve()]
-    for p in (config.IMAGES_DIR / clean, config.DATA_DIR / clean, config.MEDIA_ROOT / clean):
+    for p in (config.IMAGES_DIR / clean, config.DATA_DIR / clean, config.MEDIA_ROOT / clean,
+              config.IMAGES_DIR / Path(clean).name):
         try:
             rp = p.resolve()
             if not any(rp.is_relative_to(r) for r in roots):

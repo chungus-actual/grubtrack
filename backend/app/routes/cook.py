@@ -28,10 +28,7 @@ def migrate_recipes(con) -> None:
     and the journal table."""
     recipes.ensure_table(con)
     con.execute(recipes.TIME_BUCKET_SQL)
-    con.execute("""CREATE TABLE IF NOT EXISTS recipe_journal (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, recipe_slug TEXT NOT NULL, recipe_type TEXT NOT NULL DEFAULT 'personal',
-        score INTEGER, tags TEXT, review TEXT, mods TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)""")
-    con.execute("CREATE INDEX IF NOT EXISTS rj_slug ON recipe_journal(recipe_slug)")
+    recipes.ensure_journal(con)
     con.commit()
 
 
@@ -156,7 +153,7 @@ def list_recipes(con=Depends(get_con)):
         r["make"] = makeable(r["ingredients"], stock)
     total = con.execute("SELECT COUNT(*) FROM bulk_recipes").fetchone()[0]
     journal = {r["recipe_slug"]: {"score": r["score"], "tags": json.loads(r["tags"] or "[]")}
-               for r in con.execute("SELECT recipe_slug, score, tags FROM recipe_journal").fetchall()}
+               for r in con.execute("SELECT recipe_slug, score, tags FROM recipe_journal ORDER BY id").fetchall()}
     for r in mine:
         r["journal"] = journal.get(r["slug"])
     return {"personal": mine, "libraryTotal": total, "journal": journal}
@@ -219,7 +216,7 @@ def recipe_stats(con=Depends(get_con)):
 
 @router.get("/recipes/{slug}/journal")
 def get_journal(slug: str, con=Depends(get_con)):
-    row = con.execute("SELECT * FROM recipe_journal WHERE recipe_slug = ?", (slug,)).fetchone()
+    row = con.execute("SELECT * FROM recipe_journal WHERE recipe_slug = ? ORDER BY id DESC", (slug,)).fetchone()
     if not row:
         return {"entry": None}
     row = dict(row)
