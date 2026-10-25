@@ -1,6 +1,7 @@
 """The ledger's promises: prices survive restocks, corrections don't duplicate, receipts reconcile
 or say so, receipt lines outrank voice-logged prices, and one store is one store."""
 
+import datetime as dt
 import json
 
 import pytest
@@ -65,7 +66,8 @@ def test_dollar_signs_survive_file_input(cli, con, tmp_path):
 
 
 def _receipt(lines, total, tax=0.0, **kw):
-    return {"store": "Albertsons Store #12, 2200 W Oak Ave, Springfield, IL 62704", "date": "2026-10-21",
+    # dated today: a receipt links to pantry rows logged from the day before to three days after it
+    return {"store": "Albertsons Store #12, 2200 W Oak Ave, Springfield, IL 62704", "date": dt.date.today().isoformat(),
             "total": total, "tax": tax, "lines": lines, **kw}
 
 

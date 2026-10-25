@@ -72,7 +72,7 @@ def test_receipt_flow_and_prices(client):
     con = connect()
     eggs = client.post("/api/items", json={"name": "Eggs (dozen)", "storage": "fridge", "category": "dairy"}).json()
     rep = ledger.import_receipt(con, {
-        "store": "Albertsons Store #12, 2200 W Oak Ave, Springfield, IL 62704", "date": "2026-10-21", "total": 13.48,
+        "store": "Albertsons Store #12, 2200 W Oak Ave, Springfield, IL 62704", "date": __import__("datetime").date.today().isoformat(), "total": 13.48,
         "tax": 0, "lines": [{"raw": "PETE & GERRY EGGS", "name": "Pete & Gerry's eggs", "brand": "Pete & Gerry's",
                              "size": "dozen", "price": 6.99, "regular": 7.99},
                             {"raw": "ORIGIN X", "name": "Origin X", "section": "GROCERY", "price": 6.49}]},
