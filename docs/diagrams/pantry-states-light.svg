@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="430" viewBox="0 0 960 430" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" role="img">
+<defs>
+<marker id="arrow-base" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#8c959f"/></marker>
+<marker id="arrow-yellow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#8a6d00"/></marker>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#2a78d6"/></marker>
+<marker id="arrow-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#0d7a3a"/></marker>
+<marker id="arrow-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#c62f2f"/></marker>
+<marker id="arrow-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#9a5800"/></marker>
+<marker id="arrow-slate" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#57606a"/></marker>
+<filter id="lift" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#1f2328" flood-opacity="0.1"/></filter>
+</defs>
+<path d="M190.0,187.0 C218.0,187.0 208.0,187.0 234.0,187.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M416.0,187.0 C444.0,187.0 434.0,187.0 460.0,187.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M642.0,187.0 C670.0,187.0 660.0,187.0 686.0,187.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M778.0,140.0 C778.0,30.0 344.0,30.0 344.0,138.0" fill="none" stroke="#0d7a3a" stroke-width="1.6" marker-end="url(#arrow-green)"/>
+<path d="M353.0,140 C353.0,104.8 299.0,104.8 299.0,140" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M344.0,234.0 C344.0,300.8 375.2,345.4 440.0,345.4" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M552.0,234.0 C552.0,270.9 552.0,279.1 552.0,314.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M760.0,234.0 C760.0,300.8 728.8,345.4 664.0,345.4" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M442.0,379.0 C344.5,379.0 281.0,331.5 281.0,236.0" fill="none" stroke="#8c959f" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arrow-base)"/>
+<g filter="url(#lift)"><rect x="14" y="150" width="176" height="74" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-logged-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a78d6" stop-opacity="0.1"/><stop offset="1" stop-color="#2a78d6" stop-opacity="0"/></linearGradient></defs>
+<rect x="14.5" y="150.5" width="175" height="44" rx="10.5" fill="url(#wash-logged-light)"/>
+<text x="102.0" y="178.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#2a78d6" text-anchor="middle">PHOTO, FORM, CLI, AGENT</text>
+<text x="102.0" y="199.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Logged</text>
+<g filter="url(#lift)"><rect x="236" y="140" width="180" height="94" rx="11" fill="#ffffff" stroke="#0d7a3a" stroke-width="1.4"/></g>
+<defs><linearGradient id="wash-ok-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d7a3a" stop-opacity="0.1"/><stop offset="1" stop-color="#0d7a3a" stop-opacity="0"/></linearGradient></defs>
+<rect x="236.5" y="140.5" width="179" height="44" rx="10.5" fill="url(#wash-ok-light)"/>
+<text x="326.0" y="161.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#0d7a3a" text-anchor="middle">IN DATE</text>
+<text x="326.0" y="182.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">On the shelf</text>
+<text x="326.0" y="201.5" font-size="13" fill="#59636e" text-anchor="middle">a restock merges</text>
+<text x="326.0" y="218.5" font-size="13" fill="#59636e" text-anchor="middle">into the same row</text>
+<g filter="url(#lift)"><rect x="462" y="140" width="180" height="94" rx="11" fill="#ffffff" stroke="#9a5800" stroke-width="1.4"/></g>
+<defs><linearGradient id="wash-soon-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5800" stop-opacity="0.1"/><stop offset="1" stop-color="#9a5800" stop-opacity="0"/></linearGradient></defs>
+<rect x="462.5" y="140.5" width="179" height="44" rx="10.5" fill="url(#wash-soon-light)"/>
+<text x="552.0" y="170.0" font-size="11" font-weight="700" letter-spacing="1.3" fill="#9a5800" text-anchor="middle">USE FIRST</text>
+<text x="552.0" y="191.0" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">3 days or fewer</text>
+<text x="552.0" y="210.0" font-size="13" fill="#59636e" text-anchor="middle">floats to the top</text>
+<g filter="url(#lift)"><rect x="688" y="140" width="180" height="94" rx="11" fill="#ffffff" stroke="#c62f2f" stroke-width="1.4"/></g>
+<defs><linearGradient id="wash-past-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c62f2f" stop-opacity="0.1"/><stop offset="1" stop-color="#c62f2f" stop-opacity="0"/></linearGradient></defs>
+<rect x="688.5" y="140.5" width="179" height="44" rx="10.5" fill="url(#wash-past-light)"/>
+<text x="778.0" y="170.0" font-size="11" font-weight="700" letter-spacing="1.3" fill="#c62f2f" text-anchor="middle">PAST DATE</text>
+<text x="778.0" y="191.0" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Your call</text>
+<text x="778.0" y="210.0" font-size="13" fill="#59636e" text-anchor="middle">stays until marked</text>
+<g filter="url(#lift)"><rect x="442" y="316" width="220" height="84" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-gone-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#57606a" stop-opacity="0.1"/><stop offset="1" stop-color="#57606a" stop-opacity="0"/></linearGradient></defs>
+<rect x="442.5" y="316.5" width="219" height="44" rx="10.5" fill="url(#wash-gone-light)"/>
+<text x="552.0" y="332.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#57606a" text-anchor="middle">GONE</text>
+<text x="552.0" y="353.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Kept on record</text>
+<text x="552.0" y="372.5" font-size="13" fill="#59636e" text-anchor="middle">Ate it: restock ideas</text>
+<text x="552.0" y="389.5" font-size="13" fill="#59636e" text-anchor="middle">Tossed: waste on Spend</text>
+<rect x="397.1" y="177.5" width="83.3" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="438.8" y="191.0" font-size="12.5" fill="#59636e" text-anchor="middle">3 days left</text>
+<rect x="619.9" y="177.5" width="89.8" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="664.8" y="191.0" font-size="12.5" fill="#59636e" text-anchor="middle">date passes</text>
+<rect x="483.7" y="47.8" width="154.6" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="561.0" y="61.2" font-size="12.5" fill="#0d7a3a" text-anchor="middle">Still good: 7 more days</text>
+<rect x="293.5" y="92.1" width="65.0" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="326.0" y="105.6" font-size="12.5" fill="#59636e" text-anchor="middle">restock</text>
+<rect x="315.2" y="310.8" width="115.0" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="372.7" y="324.3" font-size="12.5" fill="#59636e" text-anchor="middle">Ate it or Tossed</text>
+<rect x="311.7" y="340.6" width="44.0" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="333.7" y="354.1" font-size="12.5" fill="#59636e" text-anchor="middle">Undo</text>
+</svg>

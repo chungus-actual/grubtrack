@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="300" viewBox="0 0 960 300" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" role="img">
+<defs>
+<marker id="arrow-base" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#8c959f"/></marker>
+<marker id="arrow-yellow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#8a6d00"/></marker>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#2a78d6"/></marker>
+<marker id="arrow-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#0d7a3a"/></marker>
+<marker id="arrow-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#c62f2f"/></marker>
+<marker id="arrow-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#9a5800"/></marker>
+<marker id="arrow-slate" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#57606a"/></marker>
+<filter id="lift" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#1f2328" flood-opacity="0.1"/></filter>
+</defs>
+<path d="M150.0,198.0 C178.0,198.0 144.0,198.0 170.0,198.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M310.0,198.0 C338.0,198.0 304.0,198.0 330.0,198.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M470.0,198.0 C498.0,198.0 464.0,198.0 490.0,198.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M630.0,198.0 C658.0,198.0 624.0,198.0 650.0,198.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M790.0,198.0 C818.0,198.0 784.0,198.0 810.0,198.0" fill="none" stroke="#8c959f" stroke-width="1.6" marker-end="url(#arrow-base)"/>
+<path d="M561.0,88.0 C561.0,116.0 561.0,122.0 561.0,148.0" fill="none" stroke="#8c959f" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arrow-base)"/>
+<g filter="url(#lift)"><rect x="12" y="150" width="138" height="96" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-r1-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a78d6" stop-opacity="0.1"/><stop offset="1" stop-color="#2a78d6" stop-opacity="0"/></linearGradient></defs>
+<rect x="12.5" y="150.5" width="137" height="44" rx="10.5" fill="url(#wash-r1-light)"/>
+<text x="81.0" y="172.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#2a78d6" text-anchor="middle">YOU</text>
+<text x="81.0" y="193.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Photo</text>
+<text x="81.0" y="212.5" font-size="13" fill="#59636e" text-anchor="middle">snap the</text>
+<text x="81.0" y="229.5" font-size="13" fill="#59636e" text-anchor="middle">receipt</text>
+<g filter="url(#lift)"><rect x="172" y="150" width="138" height="96" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-r2-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d7a3a" stop-opacity="0.1"/><stop offset="1" stop-color="#0d7a3a" stop-opacity="0"/></linearGradient></defs>
+<rect x="172.5" y="150.5" width="137" height="44" rx="10.5" fill="url(#wash-r2-light)"/>
+<text x="241.0" y="172.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#0d7a3a" text-anchor="middle">MODEL SLOT</text>
+<text x="241.0" y="193.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Draft</text>
+<text x="241.0" y="212.5" font-size="13" fill="#59636e" text-anchor="middle">store, date, tax,</text>
+<text x="241.0" y="229.5" font-size="13" fill="#59636e" text-anchor="middle">total, every line</text>
+<g filter="url(#lift)"><rect x="332" y="150" width="138" height="96" rx="11" fill="#ffffff" stroke="#2a78d6" stroke-width="1.4"/></g>
+<defs><linearGradient id="wash-r3-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a78d6" stop-opacity="0.1"/><stop offset="1" stop-color="#2a78d6" stop-opacity="0"/></linearGradient></defs>
+<rect x="332.5" y="150.5" width="137" height="44" rx="10.5" fill="url(#wash-r3-light)"/>
+<text x="401.0" y="172.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#2a78d6" text-anchor="middle">YOU</text>
+<text x="401.0" y="193.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Check</text>
+<text x="401.0" y="212.5" font-size="13" fill="#59636e" text-anchor="middle">beside the photo;</text>
+<text x="401.0" y="229.5" font-size="13" fill="#59636e" text-anchor="middle">fix any misread</text>
+<g filter="url(#lift)"><rect x="492" y="150" width="138" height="96" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-r4-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6d00" stop-opacity="0.1"/><stop offset="1" stop-color="#8a6d00" stop-opacity="0"/></linearGradient></defs>
+<rect x="492.5" y="150.5" width="137" height="44" rx="10.5" fill="url(#wash-r4-light)"/>
+<text x="561.0" y="172.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#8a6d00" text-anchor="middle">GRUBTRACK</text>
+<text x="561.0" y="193.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Match</text>
+<text x="561.0" y="212.5" font-size="13" fill="#59636e" text-anchor="middle">store, products;</text>
+<text x="561.0" y="229.5" font-size="13" fill="#59636e" text-anchor="middle">no duplicates</text>
+<g filter="url(#lift)"><rect x="652" y="150" width="138" height="96" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-r5-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6d00" stop-opacity="0.1"/><stop offset="1" stop-color="#8a6d00" stop-opacity="0"/></linearGradient></defs>
+<rect x="652.5" y="150.5" width="137" height="44" rx="10.5" fill="url(#wash-r5-light)"/>
+<text x="721.0" y="172.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#8a6d00" text-anchor="middle">FOOD.DB</text>
+<text x="721.0" y="193.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Ledger</text>
+<text x="721.0" y="212.5" font-size="13" fill="#59636e" text-anchor="middle">a row per line,</text>
+<text x="721.0" y="229.5" font-size="13" fill="#59636e" text-anchor="middle">linked to pantry</text>
+<g filter="url(#lift)"><rect x="812" y="150" width="138" height="96" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-r6-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d7a3a" stop-opacity="0.1"/><stop offset="1" stop-color="#0d7a3a" stop-opacity="0"/></linearGradient></defs>
+<rect x="812.5" y="150.5" width="137" height="44" rx="10.5" fill="url(#wash-r6-light)"/>
+<text x="881.0" y="172.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#0d7a3a" text-anchor="middle">YOU</text>
+<text x="881.0" y="193.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Result</text>
+<text x="881.0" y="212.5" font-size="13" fill="#59636e" text-anchor="middle">adds up, or</text>
+<text x="881.0" y="229.5" font-size="13" fill="#59636e" text-anchor="middle">off by $x</text>
+<g filter="url(#lift)"><rect x="492" y="24" width="138" height="64" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-skill-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5800" stop-opacity="0.1"/><stop offset="1" stop-color="#9a5800" stop-opacity="0"/></linearGradient></defs>
+<rect x="492.5" y="24.5" width="137" height="44" rx="10.5" fill="url(#wash-skill-light)"/>
+<text x="561.0" y="47.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#9a5800" text-anchor="middle">AGENT SKILL</text>
+<text x="561.0" y="68.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">receipt-add</text>
+<text x="401.0" y="40" font-size="12.5" fill="#0d7a3a" text-anchor="middle">lines + tax = printed total</text>
+<text x="401.0" y="58" font-size="12.5" fill="#59636e" text-anchor="middle">within $0.02, or it says so</text>
+<text x="401.0" y="76" font-size="12.5" fill="#59636e" text-anchor="middle">warns: no store, odd date</text>
+<rect x="514.3" y="109.2" width="93.4" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="561.0" y="122.8" font-size="12.5" fill="#59636e" text-anchor="middle">same checks</text>
+</svg>

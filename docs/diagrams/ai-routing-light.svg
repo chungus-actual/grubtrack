@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" role="img">
+<defs>
+<marker id="arrow-base" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#8c959f"/></marker>
+<marker id="arrow-yellow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#8a6d00"/></marker>
+<marker id="arrow-blue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#2a78d6"/></marker>
+<marker id="arrow-green" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#0d7a3a"/></marker>
+<marker id="arrow-red" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#c62f2f"/></marker>
+<marker id="arrow-warn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#9a5800"/></marker>
+<marker id="arrow-slate" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Q2.6,5 1,1.2 Z" fill="#57606a"/></marker>
+<filter id="lift" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#1f2328" flood-opacity="0.1"/></filter>
+</defs>
+<rect x="616" y="16" width="328" height="408" rx="14" fill="#eff2f5" fill-opacity="0.7"/>
+<text x="632" y="38" font-size="11.5" font-weight="700" letter-spacing="1.4" fill="#818b98">SLOTS</text>
+<rect x="16" y="16" width="360" height="408" rx="14" fill="#eff2f5" fill-opacity="0.7"/>
+<text x="32" y="38" font-size="11.5" font-weight="700" letter-spacing="1.4" fill="#818b98">JOBS</text>
+<path d="M356.0,87.0 C466.0,87.0 530.0,92.5 638.0,92.5" fill="none" stroke="#0d7a3a" stroke-width="1.6" marker-end="url(#arrow-green)"/>
+<path d="M356.0,175.0 C466.0,175.0 530.0,124.0 638.0,124.0" fill="none" stroke="#0d7a3a" stroke-width="1.6" marker-end="url(#arrow-green)"/>
+<path d="M356.0,175.0 C466.0,175.0 530.0,244.0 638.0,244.0" fill="none" stroke="#8c959f" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arrow-base)"/>
+<path d="M356.0,263.0 C466.0,263.0 530.0,271.0 638.0,271.0" fill="none" stroke="#9a5800" stroke-width="1.6" marker-end="url(#arrow-warn)"/>
+<path d="M356.0,263.0 C466.0,263.0 530.0,151.0 638.0,151.0" fill="none" stroke="#8c959f" stroke-width="1.6" stroke-dasharray="4 4" marker-end="url(#arrow-base)"/>
+<path d="M356.0,351.0 C466.0,351.0 530.0,298.0 638.0,298.0" fill="none" stroke="#9a5800" stroke-width="1.6" marker-end="url(#arrow-warn)"/>
+<g filter="url(#lift)"><rect x="36" y="52" width="320" height="70" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-photo-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a78d6" stop-opacity="0.1"/><stop offset="1" stop-color="#2a78d6" stop-opacity="0"/></linearGradient></defs>
+<rect x="36.5" y="52.5" width="319" height="44" rx="10.5" fill="url(#wash-photo-light)"/>
+<text x="196.0" y="70.0" font-size="11" font-weight="700" letter-spacing="1.3" fill="#2a78d6" text-anchor="middle">RECEIPTS</text>
+<text x="196.0" y="91.0" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Read a photo</text>
+<text x="196.0" y="110.0" font-size="13" fill="#59636e" text-anchor="middle">model only; it must read images</text>
+<g filter="url(#lift)"><rect x="36" y="140" width="320" height="70" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-text-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a78d6" stop-opacity="0.1"/><stop offset="1" stop-color="#2a78d6" stop-opacity="0"/></linearGradient></defs>
+<rect x="36.5" y="140.5" width="319" height="44" rx="10.5" fill="url(#wash-text-light)"/>
+<text x="196.0" y="158.0" font-size="11" font-weight="700" letter-spacing="1.3" fill="#2a78d6" text-anchor="middle">RECIPES</text>
+<text x="196.0" y="179.0" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Read pasted text</text>
+<text x="196.0" y="198.0" font-size="13" fill="#59636e" text-anchor="middle">and estimate a recipe&#x27;s times</text>
+<g filter="url(#lift)"><rect x="36" y="228" width="320" height="70" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-meals-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6d00" stop-opacity="0.1"/><stop offset="1" stop-color="#8a6d00" stop-opacity="0"/></linearGradient></defs>
+<rect x="36.5" y="228.5" width="319" height="44" rx="10.5" fill="url(#wash-meals-light)"/>
+<text x="196.0" y="246.0" font-size="11" font-weight="700" letter-spacing="1.3" fill="#8a6d00" text-anchor="middle">COOK PAGE</text>
+<text x="196.0" y="267.0" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Suggest meals</text>
+<text x="196.0" y="286.0" font-size="13" fill="#59636e" text-anchor="middle">from what is in the house</text>
+<g filter="url(#lift)"><rect x="36" y="316" width="320" height="70" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-send-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6d00" stop-opacity="0.1"/><stop offset="1" stop-color="#8a6d00" stop-opacity="0"/></linearGradient></defs>
+<rect x="36.5" y="316.5" width="319" height="44" rx="10.5" fill="url(#wash-send-light)"/>
+<text x="196.0" y="334.0" font-size="11" font-weight="700" letter-spacing="1.3" fill="#8a6d00" text-anchor="middle">LIST PAGE</text>
+<text x="196.0" y="355.0" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Send the list</text>
+<text x="196.0" y="374.0" font-size="13" fill="#59636e" text-anchor="middle">to a chat; GT_LIST_SEND_TO</text>
+<g filter="url(#lift)"><rect x="640" y="70" width="280" height="90" rx="11" fill="#ffffff" stroke="#0d7a3a" stroke-width="1.4"/></g>
+<defs><linearGradient id="wash-model-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d7a3a" stop-opacity="0.1"/><stop offset="1" stop-color="#0d7a3a" stop-opacity="0"/></linearGradient></defs>
+<rect x="640.5" y="70.5" width="279" height="44" rx="10.5" fill="url(#wash-model-light)"/>
+<text x="780.0" y="89.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#0d7a3a" text-anchor="middle">GT_MODEL_PROVIDER</text>
+<text x="780.0" y="110.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Model slot</text>
+<text x="780.0" y="129.5" font-size="13" fill="#59636e" text-anchor="middle">OpenAI-compatible (Ollama too)</text>
+<text x="780.0" y="146.5" font-size="13" fill="#59636e" text-anchor="middle">or Claude</text>
+<g filter="url(#lift)"><rect x="640" y="226" width="280" height="90" rx="11" fill="#ffffff" stroke="#9a5800" stroke-width="1.4"/></g>
+<defs><linearGradient id="wash-agent-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5800" stop-opacity="0.1"/><stop offset="1" stop-color="#9a5800" stop-opacity="0"/></linearGradient></defs>
+<rect x="640.5" y="226.5" width="279" height="44" rx="10.5" fill="url(#wash-agent-light)"/>
+<text x="780.0" y="245.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#9a5800" text-anchor="middle">GT_AGENT</text>
+<text x="780.0" y="266.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Agent slot</text>
+<text x="780.0" y="285.5" font-size="13" fill="#59636e" text-anchor="middle">OpenClaw or Hermes,</text>
+<text x="780.0" y="302.5" font-size="13" fill="#59636e" text-anchor="middle">through their CLIs</text>
+<g filter="url(#lift)"><rect x="640" y="346" width="280" height="64" rx="11" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/></g>
+<defs><linearGradient id="wash-none-light" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#57606a" stop-opacity="0.1"/><stop offset="1" stop-color="#57606a" stop-opacity="0"/></linearGradient></defs>
+<rect x="640.5" y="346.5" width="279" height="44" rx="10.5" fill="url(#wash-none-light)"/>
+<text x="780.0" y="369.5" font-size="11" font-weight="700" letter-spacing="1.3" fill="#57606a" text-anchor="middle">NO AI NEEDED</text>
+<text x="780.0" y="390.5" font-size="16" font-weight="600" fill="#1f2328" text-anchor="middle">Links, typed receipts, Share</text>
+<text x="396" y="410" font-size="12.5" fill="#59636e" text-anchor="start">solid: first choice  ·  dashed: fallback</text>
+<rect x="387.1" y="177.1" width="93.9" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="434.1" y="190.6" font-size="12.5" fill="#59636e" text-anchor="middle">no model set</text>
+<rect x="519.8" y="157.8" width="93.5" height="19" rx="9" fill="#ffffff" stroke="#d1d9e0" stroke-width="1"/>
+<text x="566.6" y="171.3" font-size="12.5" fill="#59636e" text-anchor="middle">no agent set</text>
+</svg>
