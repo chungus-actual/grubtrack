@@ -197,7 +197,7 @@ export default function Pantry() {
         </div>
         {view === 'past' && past.length > 0 && (
           <p className="note" style={{ marginTop: 14 }}>
-            Past their date and still on record. Nothing leaves unless you mark it, and marking keeps the record:
+            Past their date and still on record. Nothing leaves unless you mark it, and marking keeps the record:{' '}
             <b>Ate it</b> and <b>Tossed</b> feed the restock ideas and the waste numbers.
           </p>
         )}

@@ -173,14 +173,14 @@ cheaper" have real answers. GrubTrack's Prices and Spend pages show it.
 ### When a receipt photo arrives
 
 1. **Transcribe every line**, not just the inventory items. For each line:
-   - `raw`: the text exactly as printed (`"PETE & GERRY EGGS"`)
-   - `name`: what it is in plain words (`"Pete & Gerry's eggs"`), `brand` when you know it
+   - `raw`: the text exactly as printed (`"VITAL FARMS LG EGGS"`)
+   - `name`: what it is in plain words (`"Vital Farms large eggs"`), `brand` when you know it
    - `code`: the item number printed at the left, if any (it ties the same product across trips)
-   - `section`: the department header it sits under (`"PRODUCE"`, `"REFRIG/FROZEN"`)
+   - `section`: the department header it sits under (`"PRODUCE"`, `"DAIRY"`)
    - `price`: the amount actually paid for that line ("You Pay"), after any sale
    - `regular`: the pre-sale price when a "Sale Savings" / "Regular Price" line follows
    - `qty`: for multi-buys (`2@ ...`, `3 @ $2.29 ea`) the count; default 1
-   - `weightLb` + `perLb`: for weighed produce (`WT 3.53 lb @ $2.29 /lb`)
+   - `weightLb` + `perLb`: for weighed produce (`WT 2.80 lb @ $2.29 /lb`)
    - `taxed`: true when the line carries a tax flag (T)
    - `size`: only when printed or known for sure (`"32 oz"`, `"dozen"`)
    - `itemId`: the inventory row this line stocked, when you know it (`find --q` to look it up)
@@ -204,16 +204,16 @@ cheaper" have real answers. GrubTrack's Prices and Spend pages show it.
    which is the point: the spend and price history are real either way.
 7. Reply briefly: store, total, line count, whether it adds up, how many linked, any corrected.
 
-Minimal file:
+Minimal file (two lines, no tax, so the lines alone come to the total):
 ```json
-{"store": "Albertsons Store #12, 2200 W Oak Ave, Springfield, IL 62704", "date": "2026-10-21",
- "tax": 1.76, "total": 250.35, "savings": 29.82, "payment": "Visa",
- "image": "images/receipt-20261021-albertsons.jpg",
+{"store": "Fieldstone Market #214, 1180 Harbor Rd, Maple Falls, OR 97031", "date": "2026-10-21",
+ "tax": 0, "total": 13.40, "savings": 0.50, "payment": "Visa 4242",
+ "image": "images/receipt-20261021-fieldstone.jpg",
  "lines": [
-  {"raw": "PETE & GERRY EGGS", "name": "Pete & Gerry's eggs", "brand": "Pete & Gerry's", "code": "81565200214",
-   "section": "REFRIG/FROZEN", "price": 6.99, "regular": 7.99, "size": "dozen", "itemId": "fi_20261021_180000_a1b2c3"},
-  {"raw": "APPLES COSMIC CRSP", "name": "Cosmic Crisp apples", "section": "PRODUCE", "price": 8.08,
-   "weightLb": 3.53, "perLb": 2.29}
+  {"raw": "VITAL FARMS LG EGGS", "name": "Vital Farms large eggs", "brand": "Vital Farms", "code": "64420",
+   "section": "DAIRY", "price": 6.99, "regular": 7.49, "size": "dozen", "itemId": "fi_20261021_180000_a1b2c3"},
+  {"raw": "APPLES HONEYCRISP", "name": "Honeycrisp apples", "section": "PRODUCE", "price": 6.41,
+   "weightLb": 2.80, "perLb": 2.29}
  ]}
 ```
 

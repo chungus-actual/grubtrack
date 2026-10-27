@@ -651,8 +651,9 @@ def estimate(con: sqlite3.Connection, names: list[str]) -> dict:
 
 def overview(con: sqlite3.Connection) -> dict:
     today = _today()
-    live = con.execute("SELECT COUNT(*), SUM(price IS NOT NULL), ROUND(SUM(price), 2) FROM items WHERE deletedAt IS NULL"
-                       ).fetchone()
+    num = "typeof(price) IN ('integer', 'real')"   # a price column anyone can write: text is not a price
+    held = con.execute(f"SELECT COUNT(*), SUM({num}), ROUND(SUM(CASE WHEN {num} THEN price END), 2) FROM items"
+                       " WHERE deletedAt IS NULL").fetchone()
     exp = con.execute(
         "SELECT SUM(expirationDate < ?), SUM(expirationDate BETWEEN ? AND date(?, '+3 days')),"
         " SUM(expirationDate BETWEEN ? AND date(?, '+7 days')) FROM items WHERE deletedAt IS NULL AND expirationDate IS NOT NULL",
@@ -663,14 +664,14 @@ def overview(con: sqlite3.Connection) -> dict:
     spend30 = sum(t["total"] or 0 for t in sp["trips"] if t["date"] >= last30) + \
         sum(o["price"] for o in sp["loose"] if o["date"] >= last30)
     infl = inflation(con)
-    live = "supersededBy IS NULL AND typeof(price) IN ('integer', 'real') AND price > 0"
-    n_products = con.execute(f"SELECT COUNT(DISTINCT productId) FROM purchases WHERE {live}").fetchone()[0]
-    n_obs = con.execute(f"SELECT COUNT(*), SUM(source = 'receipt') FROM purchases WHERE {live}").fetchone()
+    priced = "supersededBy IS NULL AND typeof(price) IN ('integer', 'real') AND price > 0"
+    n_products = con.execute(f"SELECT COUNT(DISTINCT productId) FROM purchases WHERE {priced}").fetchone()[0]
+    n_obs = con.execute(f"SELECT COUNT(*), SUM(source = 'receipt') FROM purchases WHERE {priced}").fetchone()
     review = con.execute("SELECT COUNT(*) FROM products WHERE (cat LIKE '%.other' OR confidence = 'low')"
                          " AND catSource = 'auto' AND id IN (SELECT productId FROM items WHERE deletedAt IS NULL"
                          " UNION SELECT productId FROM purchases WHERE supersededBy IS NULL)").fetchone()[0]
     return {
-        "stock": {"items": live[0], "priced": live[1] or 0, "value": live[2] or 0,
+        "stock": {"items": held[0], "priced": held[1] or 0, "value": held[2] or 0,
                   "expired": exp[0] or 0, "soon3": exp[1] or 0, "soon7": exp[2] or 0},
         "spend": {"last30": _r(spend30), "month": month, "trips": len(sp["trips"]),
                   "saved": _r(sum(_n(t["saved"]) for t in sp["trips"]))},

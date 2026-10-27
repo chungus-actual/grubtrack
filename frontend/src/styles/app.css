@@ -162,6 +162,9 @@ img { max-width: 100%; display: block; }
 .btn--danger { color: var(--up); }
 .btn[disabled] { opacity: 0.45; cursor: default; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* a tappable word inside a sentence: no box and the sentence's own font, so the punctuation after it sits tight */
+.textbtn { display: inline; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: inherit; cursor: pointer; }
+.textbtn:hover { text-decoration: underline; }
 
 .iconbtn {
   display: inline-grid; place-items: center; width: 40px; height: 40px;
@@ -298,6 +301,9 @@ img { max-width: 100%; display: block; }
 
 .storekey { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .storekey i { width: 9px; height: 9px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px var(--surface); }
+/* in a table cell a long store name wraps beside its dot instead of widening the table past a phone screen */
+.tbl .storekey { white-space: normal; align-items: flex-start; }
+.tbl .storekey i { margin-top: 0.4em; }
 
 /* --------------------------------------------------------------- lists */
 

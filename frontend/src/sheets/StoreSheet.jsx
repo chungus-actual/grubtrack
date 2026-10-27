@@ -25,7 +25,7 @@ export default function StoreSheet({ id, onClose }) {
             {s.address ? `, ${s.address}` : ''}{s.city ? `, ${s.city}` : ''}{s.storeNumber ? `, store #${s.storeNumber}` : ''}.
           </p>
           <div className="figures block">
-            <div className="figure"><span>Trips</span><b>{s.trips}</b><small>{s.firstVisit ? `since ${shortDate(s.firstVisit)}` : ''}</small></div>
+            <div className="figure"><span>Trips</span><b>{s.tripCount ?? s.trips.length}</b><small>{s.firstVisit ? `since ${shortDate(s.firstVisit)}` : ''}</small></div>
             <div className="figure"><span>Spent</span><b>{dollars(s.spend, { cents: false })}</b><small>{s.avgBasket ? `${dollars(s.avgBasket, { cents: false })} a trip` : ''}</small></div>
             <div className="figure"><span>Saved</span><b>{dollars(s.saved || 0, { cents: false })}</b><small>sales and coupons</small></div>
             {idx && (

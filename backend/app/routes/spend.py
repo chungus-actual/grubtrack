@@ -132,6 +132,9 @@ def store(sid: str, con=Depends(get_con)):
                      "lastDate": mine["lastDate"], "lastPrice": p["last"]["price"] if p["last"]["storeId"] == sid else None,
                      "other": best_other})
     s["products"] = here
+    # intel.stores() gives `trips` as a count (the Spend page's store list uses it). Here `trips` has always
+    # been this store's receipts, newest first, so the count moves to `tripCount` and the list keeps its name.
+    s["tripCount"] = s["trips"]
     s["trips"] = [t for t in intel.spend(con)["trips"] if t["storeId"] == sid]
     return s
 

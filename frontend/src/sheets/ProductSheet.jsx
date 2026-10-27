@@ -141,19 +141,21 @@ export default function ProductSheet({ id, onClose }) {
           {p.stores?.length > 1 && (
             <div className="block">
               <div className="block-title">By store <small>{perLabel(b)}</small></div>
-              <table className="tbl">
-                <thead><tr><th>Store</th><th className="r">Last</th><th className="r">Average</th><th className="r">Bought</th></tr></thead>
-                <tbody>
-                  {p.stores.map((s) => (
-                    <tr key={s.storeId || 'none'}>
-                      <td><StoreKey id={s.storeId} name={s.store} /></td>
-                      <td className="r">{money(s.last, b)}</td>
-                      <td className="r">{money(s.avg, b)}</td>
-                      <td className="r">{s.n}×</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="tbl-wrap">
+                <table className="tbl">
+                  <thead><tr><th>Store</th><th className="r">Last</th><th className="r">Average</th><th className="r">Bought</th></tr></thead>
+                  <tbody>
+                    {p.stores.map((s) => (
+                      <tr key={s.storeId || 'none'}>
+                        <td><StoreKey id={s.storeId} name={s.store} /></td>
+                        <td className="r nowrap">{money(s.last, b)}</td>
+                        <td className="r nowrap">{money(s.avg, b)}</td>
+                        <td className="r nowrap">{s.n}×</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               {p.storeGap && <p className="note" style={{ marginTop: 8 }}>{p.storeGap.cheap} is {p.storeGap.pct}% cheaper than {p.storeGap.dear} on the latest shelf prices.</p>}
             </div>
           )}

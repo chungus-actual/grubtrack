@@ -22,7 +22,7 @@ function Line({ row, onDone }) {
         <span className="row__meta" style={{ display: 'block' }}>
           {e?.match ? (
             <>
-              <button className="btn btn--ghost btn--sm" style={{ padding: 0, minHeight: 0, fontWeight: 500, color: 'inherit' }} onClick={() => open('product', e.productId)}>
+              <button className="textbtn" onClick={() => open('product', e.productId)}>
                 {e.match === 'exact' || clean(e.product || '').toLowerCase() === clean(row.name).toLowerCase() ? 'Last time' : `Like ${e.product}`}
               </button>
               {e.range ? `, ${dollars(e.range[0])} to ${dollars(e.range[1])} across ${e.kinds} kinds` : ''}

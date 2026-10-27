@@ -58,7 +58,7 @@ town called Maple Falls and six months of weekly trips.</sub>
 | <img src="docs/screenshots/pantry-past.png" width="100%" alt="The Pantry page showing past-date items with Ate it, Tossed and Still good buttons" /><br><sub>Past their date: nothing leaves until someone says it was eaten or tossed</sub> | <img src="docs/screenshots/prices.png" width="100%" alt="The Prices page: the cheaper store per product and the buying rhythm panel" /><br><sub>Prices: the cheaper store per product, and what's due on its usual rhythm</sub> |
 | <img src="docs/screenshots/spend.png" width="100%" alt="The Spend page: spend by month, by department and by store" /><br><sub>Spend: by month, by department, by store</sub> | <img src="docs/screenshots/receipt.png" width="100%" alt="A recorded receipt: each line with its category and the pantry row it stocked" /><br><sub>A recorded trip: every line, its category and the pantry row it stocked</sub> |
 | <img src="docs/screenshots/item.png" width="100%" alt="A pantry item: storage, category, its price tag and price history" /><br><sub>A pantry item: what it cost, where, and every purchase of it</sub> | <img src="docs/screenshots/list.png" width="100%" alt="The List page: six things with price estimates, the cheapest store per line, and restock ideas" /><br><sub>The list, priced at what you paid last, with restock ideas below</sub> |
-| <img src="docs/screenshots/cook.png" width="100%" alt="The Cook page: meal ideas from the agent and your recipes ranked by how much is in the house" /><br><sub>Cook: recipes ranked by how much of each is in the house</sub> | <img src="docs/screenshots/recipe.png" width="100%" alt="A recipe: each ingredient marked as in the house or missing, with a button to add the missing one to the list" /><br><sub>A recipe, line by line: what's here, and the missing one a tap from the list</sub> |
+| <img src="docs/screenshots/cook.png" width="100%" alt="The Cook page: meal ideas from the agent and your recipes ranked by how much is in the house" /><br><sub>Cook: recipes ranked by how much of each is in the house</sub> | <img src="docs/screenshots/recipe.png" width="100%" alt="A recipe: each ingredient marked as in the house or missing, with a button to add the missing ones to the list" /><br><sub>A recipe, line by line: what's here, and what's missing a tap from the list</sub> |
 
 | | | |
 |:---:|:---:|:---:|
@@ -182,8 +182,9 @@ Two kinds, both ranked by how much of each recipe is already in the house:
 Each recipe gets its protein, cuisine, dish type and time from its ingredients and categories. A
 recipe already in the library (same title, same ingredients) is skipped, so importing the same file
 twice is safe. **What I can make first** ranks recipes with at least three recognizable ingredients
-by how many are in the house. A recipe's page marks each ingredient as here or missing, adds the
-missing ones to the list in one tap, and keeps a journal: a score out of 10, tags, and how it went.
+by how many are in the house. Food past its date counts as missing, in the ranking and in meal ideas
+alike. A recipe's page marks each ingredient as here or missing, adds the missing ones to the list in
+one tap, and keeps a journal: a score out of 10, tags, and how it went.
 GrubTrack ships no recipe collection of its own.
 
 ## AI: a model, an agent, or both

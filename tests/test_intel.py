@@ -99,3 +99,19 @@ def test_waste_ignores_corrections(cli, con):
     cli("delete", "--id", iid, "--notes", "tossed")  # deleted seconds after adding: a typo fixed
     w = intel.waste(con, 30)
     assert w["tossed"] == 0
+
+
+def test_overview_counts_stock_and_its_value(cli, con):
+    """The stock line is numbers: rows in the house, how many have a price, and what those come to. A row
+    that's gone doesn't count, and a price someone wrote as text isn't a price."""
+    cli("add", "--name", "Greek yogurt", "--storage", "fridge", "--price", "6.49")
+    cli("add", "--name", "Sourdough loaf", "--storage", "counter", "--price", "5.99")
+    cli("add", "--name", "Tofu", "--storage", "fridge")
+    cli("add", "--name", "Oat milk", "--storage", "fridge", "--price", "4.29")
+    gone = con.execute("SELECT id FROM items WHERE name = 'Oat milk'").fetchone()[0]
+    cli("delete", "--id", gone, "--notes", "eaten")
+    con.execute("UPDATE items SET price = 'about 3' WHERE name = 'Tofu'")
+    con.commit()
+    s = intel.overview(con)["stock"]
+    assert (s["items"], s["priced"]) == (3, 2)
+    assert s["value"] == pytest.approx(12.48)

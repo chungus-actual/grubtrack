@@ -37,11 +37,16 @@ def migrate_recipes(con) -> None:
 _ALWAYS = {"water", "salt", "black pepper", "ice", "spice"}
 ingredient_generic = recipes.ingredient_generic
 
+# In the house for cooking: still on record and not past its date. Recipe ranking and the meal-ideas prompt
+# both use it, so a recipe never counts food the prompt leaves out. (The prompt also leaves out the bar and
+# household rows to stay about food; ranking keeps the bar, since recipes call for wine and beer.)
+ON_HAND = "i.deletedAt IS NULL AND (i.expirationDate IS NULL OR i.expirationDate >= date('now','localtime'))"
+
 
 def stock_generics(con) -> set[str]:
     out = set()
     for r in con.execute("SELECT i.name, p.generic FROM items i LEFT JOIN products p ON p.id = i.productId"
-                         " WHERE i.deletedAt IS NULL").fetchall():
+                         f" WHERE {ON_HAND}").fetchall():
         if r["generic"]:
             out.add(r["generic"])
         g = classify(r["name"])["generic"]
@@ -407,10 +412,9 @@ async def parse(body: dict = Body(...)):
 
 def _meal_prompt(con, focus: str | None, extra: str) -> str:
     rows = con.execute(
-        "SELECT name, brand, storage, cat, quantity, unit, expirationDate FROM items WHERE deletedAt IS NULL"
-        " AND (expirationDate IS NULL OR expirationDate >= date('now','localtime'))"
-        " AND storage IN ('fridge','pantry','cupboard','freezer','counter') AND coalesce(dept,'') NOT IN ('bar','household')"
-        + (" AND storage = ?" if focus else "") + " ORDER BY expirationDate IS NULL, expirationDate, storage",
+        f"SELECT i.name, i.brand, i.storage, i.cat, i.quantity, i.unit, i.expirationDate FROM items i WHERE {ON_HAND}"
+        " AND i.storage IN ('fridge','pantry','cupboard','freezer','counter') AND coalesce(i.dept,'') NOT IN ('bar','household')"
+        + (" AND i.storage = ?" if focus else "") + " ORDER BY i.expirationDate IS NULL, i.expirationDate, i.storage",
         ((focus,) if focus else ())).fetchall()
     soon, rest = [], {}
     horizon = (dt.date.today() + dt.timedelta(days=4)).isoformat()

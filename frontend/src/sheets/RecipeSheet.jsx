@@ -59,7 +59,11 @@ export default function RecipeSheet({ id, onClose }) {
     setEnrichErr(null)
     try { await post('/recipes/bulk/enrich', { slug: id }); qc.invalidateQueries({ queryKey: ['recipe', id] }) } catch (e) { setEnrichErr(e) } finally { setEnriching(false) }
   }
-  const body = r?.markdown ? r.markdown.replace(/^---[\s\S]*?\n---\s*\n/, '').replace(/^# .*\n/, '') : null
+  // the markdown below the title, without the Ingredients list (shown above, line by line) or a heading of its
+  // own for the method: the block is already titled Method
+  const body = r?.markdown ? r.markdown.replace(/^---[\s\S]*?\n---\s*\n/, '').replace(/^# .*\n/, '')
+    .replace(/##\s*Ingredients[\s\S]*?(?=\n##|$)/i, '')
+    .replace(/^\s*#{2,3}\s*(instructions|method|directions|steps|preparation)\s*\n/i, '').trim() : null
   return (
     <Sheet wide title={r?.title || 'Recipe'} onClose={onClose}
       footer={r && need.length > 0 && <button className="btn btn--ink" onClick={addMissing}><Plus aria-hidden="true" />Add {need.length} missing to the list</button>}>
@@ -97,7 +101,7 @@ export default function RecipeSheet({ id, onClose }) {
           <div className="block">
             <div className="block-title">Method</div>
             {body
-              ? <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{body.replace(/##\s*Ingredients[\s\S]*?(?=\n##|$)/i, '')}</ReactMarkdown></div>
+              ? <div className="md"><ReactMarkdown remarkPlugins={[remarkGfm]}>{body}</ReactMarkdown></div>
               : <div className="md" style={{ whiteSpace: 'pre-wrap' }}>{r.instructions || 'No method recorded.'}</div>}
           </div>
           <div className="block">

@@ -105,8 +105,13 @@ def test_receipt_flow_and_prices(client):
 
     sp = client.get("/api/spend").json()
     assert sp["spend"]["trips"][0]["total"] == 13.48
-    store = client.get(f"/api/stores/{sp['stores'][0]['id']}").json()
-    assert store["trips"] and store["products"]
+    listed = sp["stores"][0]
+    store = client.get(f"/api/stores/{listed['id']}").json()
+    # the store list counts trips; one store's page lists them (`trips`) and carries the count as `tripCount`,
+    # which the store sheet shows (it used to render the list itself and crash)
+    assert isinstance(listed["trips"], int) and isinstance(store["tripCount"], int)
+    assert store["tripCount"] == listed["trips"] == len(store["trips"]) == 1
+    assert store["trips"][0]["id"] == rid and store["trips"][0]["total"] == 13.48 and store["products"]
 
 
 def test_shopping_uses_the_shared_table(client):
@@ -134,6 +139,49 @@ def test_recipes_know_whats_in_the_house(client):
     assert client.post("/api/recipes", json={"title": "X"}).status_code == 403  # saving is off here
     assert client.put("/api/recipes/egg-fried-rice/journal", json={"score": 9, "tags": ["weeknight"]}).json()["ok"]
     assert client.get("/api/recipes/egg-fried-rice/journal").json()["entry"]["score"] == 9
+
+
+def test_past_date_food_is_not_on_hand_for_cooking(client):
+    """Recipe ranking and the meal-ideas prompt agree: food past its date counts for neither, food dated
+    today counts for both."""
+    import datetime as dt
+    from app.db import connect
+    from app.routes import cook
+
+    def prompt():
+        con = connect()
+        try:
+            return cook._meal_prompt(con, None, "")
+        finally:
+            con.close()
+
+    def soy_line():
+        rice = client.get("/api/recipes/egg-fried-rice").json()
+        return next(l for l in rice["lines"] if "soy sauce" in l["text"]), rice["make"]
+
+    soy = client.post("/api/items", json={"name": "Soy sauce", "storage": "pantry", "expirationDate": "2000-01-01"}).json()
+    line, make = soy_line()
+    assert line["have"] is False and "soy sauce" in make["need"]
+    assert "Soy sauce" not in prompt()
+    mine = next(r for r in client.get("/api/recipes").json()["personal"] if r["slug"] == "egg-fried-rice")
+    assert "soy sauce" in mine["make"]["need"]
+
+    client.patch(f"/api/items/{soy['id']}", json={"expirationDate": dt.date.today().isoformat()})
+    line, make = soy_line()
+    assert line["have"] is True and "soy sauce" not in make["need"]
+    assert "Soy sauce" in prompt()
+
+
+def test_overview_counts_whats_in_the_house(client):
+    """overview.stock is real numbers on every page that sends it (the Pantry page's "come to $X" line)."""
+    client.post("/api/items", json={"name": "Oat milk", "storage": "fridge", "price": 4.29, "expirationDate": "2099-01-01"})
+    items = client.get("/api/pantry").json()["items"]
+    priced = [i["price"] for i in items if isinstance(i["price"], (int, float))]
+    assert priced and len(priced) < len(items)   # some rows have no price, and they must not count
+    for page in ("pantry", "prices", "spend"):
+        stock = client.get(f"/api/{page}").json()["overview"]["stock"]
+        assert stock["items"] == len(items) and stock["priced"] == len(priced), page
+        assert stock["value"] == pytest.approx(sum(priced), abs=0.01), page
 
 
 def test_ai_jobs_without_any_ai(client):
