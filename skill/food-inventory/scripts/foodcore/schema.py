@@ -18,14 +18,18 @@ covers that item on that receipt (receipt lines are the authority). A correction
 receipt or day updates that observation instead of adding a second one. An observation a
 receipt line later replaces is marked `supersededBy` (kept, so unlinking can bring it back).
 
-Version lives in PRAGMA user_version (food.db was 0 before this).
+Version lives in PRAGMA user_version (food.db was 0 before this). Version 3 adds
+the expiration-rule catalog, estimate provenance, explicit no-estimate rules,
+and migration safeguards that leave existing pantry dates alone.
 """
 
 from __future__ import annotations
 
 import sqlite3
 
-VERSION = 2  # v2: millisecond capture timestamps (triggers recreated)
+from . import expiration
+
+VERSION = 3
 
 # milliseconds: whether a logged price came before or after a receipt was recorded decides
 # whether it was a guess at that receipt (ledger._GUESS); seconds tie too easily
@@ -97,6 +101,19 @@ CREATE TABLE IF NOT EXISTS product_aliases (
   key TEXT PRIMARY KEY,
   productId TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS expiration_rules (
+  id TEXT PRIMARY KEY,
+  generic TEXT,
+  category TEXT,
+  storage TEXT NOT NULL DEFAULT '*',
+  days INTEGER NOT NULL CHECK(days >= 0 AND days <= 3650),
+  priority INTEGER NOT NULL DEFAULT 0,
+  enabled INTEGER NOT NULL DEFAULT 1 CHECK(enabled IN (0, 1)),
+  source TEXT NOT NULL DEFAULT 'custom',
+  noEstimate INTEGER NOT NULL DEFAULT 0 CHECK(noEstimate IN (0, 1))
+);
+CREATE INDEX IF NOT EXISTS idx_expiration_rules_match
+  ON expiration_rules(enabled, generic, category, storage, priority);
 CREATE TABLE IF NOT EXISTS purchases (
   id TEXT PRIMARY KEY,
   source TEXT NOT NULL,
@@ -160,6 +177,8 @@ COLUMNS = [
     ("items", "productId", "TEXT"),
     ("items", "dept", "TEXT"),
     ("items", "cat", "TEXT"),
+    ("items", "expirationSource", "TEXT"),
+    ("items", "expirationRuleId", "TEXT"),
     ("receipts", "storeId", "TEXT"),
     ("receipts", "subtotal", "REAL"),
     ("receipts", "tax", "REAL"),
@@ -207,6 +226,9 @@ def migrate(con: sqlite3.Connection) -> int:
                 if "duplicate column" not in str(e):  # another process got there first: fine
                     raise
     con.executescript(DDL)
+    if "noEstimate" not in _cols(con, "expiration_rules"):
+        con.execute("ALTER TABLE expiration_rules ADD COLUMN noEstimate INTEGER NOT NULL DEFAULT 0")
+    expiration.seed(con)
     con.execute("CREATE INDEX IF NOT EXISTS idx_items_product ON items(productId)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_items_cat ON items(cat)")
     con.execute(f"PRAGMA user_version = {VERSION}")
