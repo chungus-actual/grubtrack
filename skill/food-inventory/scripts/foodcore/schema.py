@@ -20,7 +20,8 @@ receipt line later replaces is marked `supersededBy` (kept, so unlinking can bri
 
 Version lives in PRAGMA user_version (food.db was 0 before this). Version 3 adds
 the expiration-rule catalog, estimate provenance, explicit no-estimate rules,
-and migration safeguards that leave existing pantry dates alone.
+and migration safeguards that leave existing pantry dates alone. Version 4 adds the
+settings table that makes estimates opt-in, and retires two rules the opt-outs replaced.
 """
 
 from __future__ import annotations
@@ -29,7 +30,7 @@ import sqlite3
 
 from . import expiration
 
-VERSION = 3
+VERSION = 4
 
 # milliseconds: whether a logged price came before or after a receipt was recorded decides
 # whether it was a guess at that receipt (ledger._GUESS); seconds tie too easily
@@ -114,6 +115,10 @@ CREATE TABLE IF NOT EXISTS expiration_rules (
 );
 CREATE INDEX IF NOT EXISTS idx_expiration_rules_match
   ON expiration_rules(enabled, generic, category, storage, priority);
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT
+);
 CREATE TABLE IF NOT EXISTS purchases (
   id TEXT PRIMARY KEY,
   source TEXT NOT NULL,
@@ -228,6 +233,8 @@ def migrate(con: sqlite3.Connection) -> int:
     con.executescript(DDL)
     if "noEstimate" not in _cols(con, "expiration_rules"):
         con.execute("ALTER TABLE expiration_rules ADD COLUMN noEstimate INTEGER NOT NULL DEFAULT 0")
+    con.execute("DELETE FROM expiration_rules WHERE source = 'built-in' AND id IN ('bar-any', 'household-any')")
+    con.execute("UPDATE expiration_rules SET priority = 0 WHERE source = 'built-in' AND noEstimate = 1")
     expiration.seed(con)
     con.execute("CREATE INDEX IF NOT EXISTS idx_items_product ON items(productId)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_items_cat ON items(cat)")

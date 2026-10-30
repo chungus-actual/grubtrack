@@ -155,8 +155,14 @@ A pantry row is in date, then **Use first** (dated today through the next three 
 the Pantry page), then past its date. A restock of something already in the house merges into its
 row; the ledger keeps the old price. **Still good** on a past-date row gives it seven more days.
 
-When a newly logged row has no explicit use-by date, GrubTrack can assign a deterministic estimate
-from the SQLite `expiration_rules` catalog. Rules match the taxonomy's canonical product or category
+GrubTrack can also estimate a use-by date for things logged without one. It's off until a household
+turns it on: the Pantry page asks once and keeps the switch at the bottom of the page, and agents use
+`fooddb_sqlite.py expiration-estimates --set on`. Only what's logged from then on gets an estimate.
+Items already in the pantry keep their dates or their lack of one, and an item whose estimate would
+already be past (an old receipt) goes in undated.
+
+With estimates on, a newly logged row with no explicit use-by date gets a deterministic estimate from
+the SQLite `expiration_rules` catalog. Rules match the taxonomy's canonical product or category
 plus its storage location; examples include bananas, lettuce and bagels. A restock estimate never
 replaces an existing printed or user-entered date. The Pantry labels generated and user-adjusted
 dates, and each estimate retains the rule id that produced it. Higher-priority household rules can
@@ -401,6 +407,7 @@ image and the from-source steps above do.
 | Sold-by-weight packages are compared only when the weight is known | two packs of deli turkey say nothing per pound |
 | A buying rhythm predicts a due date only after three purchases | two purchases are a gap, not a rhythm |
 | A category set by hand is never changed back | a correction should only have to be made once |
+| Use-by estimates are opt-in and never reach back | a guess applied to old rows would empty the pantry into **Past date** |
 | Explicit use-by dates win; otherwise `expiration_rules` may supply a labeled estimate | reminders stay deterministic without pretending every item needs a date |
 | Deleting a pantry item is soft and records eaten or tossed | that's what the restock ideas and the waste numbers learn from |
 

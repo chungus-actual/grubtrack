@@ -1,16 +1,20 @@
 """Deterministic shelf-life estimates for pantry rows without an explicit date.
 
-Rules live in SQLite so a household can inspect and override them. Seed rows are
-inserted only when their stable id is absent; a custom rule with a higher
-priority wins without modifying application code.
+Off until a household turns them on (`mode`), and turning them on only affects what is logged
+from then on. Rules live in SQLite so a household can inspect and override them. Seed rows are
+inserted only when their stable id is absent; a custom rule with a higher priority wins without
+modifying application code.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import sqlite3
 
 from .taxonomy import classify
 
+
+SETTING = "expirationEstimates"
 
 DEFAULT_RULES = (
     # Exact produce rules first. Days are intentionally conservative estimates.
@@ -38,6 +42,16 @@ DEFAULT_RULES = (
     ("tomato-counter", "tomato", None, "counter", 7),
     ("tomato-fridge", "tomato", None, "fridge", 7),
     ("bagel-any", "bagel", None, "*", 7),
+    # Keepers vs the 4-day fridge fallback, at the short end of the FoodKeeper brochure's
+    # after-opening times (FMI / Cornell). Salsa sits between jarred (1 month) and fresh (3 days).
+    ("salsa-fridge", "salsa", None, "fridge", 14),
+    ("butter-fridge", "butter", None, "fridge", 30),
+    ("sour-cream-fridge", "sour cream", None, "fridge", 14),
+    ("pasta-sauce-fridge", "pasta sauce", None, "fridge", 4),
+    ("pesto-fridge", "pesto", None, "fridge", 3),
+    ("garlic-counter", "garlic", None, "counter", 30),
+    ("ginger-counter", "ginger", None, "counter", 2),
+    ("ginger-pantry", "ginger", None, "pantry", 2),
 
     # Category rules cover the rest of the existing taxonomy.
     ("produce-greens-fridge", None, "produce.greens", "fridge", 7),
@@ -49,6 +63,7 @@ DEFAULT_RULES = (
     ("produce-vegetables-counter", None, "produce.vegetables", "counter", 7),
     ("produce-aromatics-fridge", None, "produce.aromatics", "fridge", 14),
     ("produce-aromatics-pantry", None, "produce.aromatics", "pantry", 30),
+    ("produce-aromatics-counter", None, "produce.aromatics", "counter", 14),
     ("ground-beef-fridge", "ground beef", None, "fridge", 2),
     ("ground-chicken-fridge", "ground chicken", None, "fridge", 2),
     ("ground-turkey-fridge", "ground turkey", None, "fridge", 2),
@@ -69,23 +84,25 @@ DEFAULT_RULES = (
     ("fresh-mozzarella-fridge", "mozzarella", None, "fridge", 7),
     ("dairy-cheese-fridge", None, "dairy.cheese", "fridge", 30),
     ("dairy-eggs-fridge", None, "dairy.eggs", "fridge", 28),
+    ("dairy-creamer-fridge", None, "dairy.creamer", "fridge", 14),
     ("bakery-counter", None, "bakery.*", "counter", 7),
     ("bakery-fridge", None, "bakery.*", "fridge", 14),
     ("bakery-freezer", None, "bakery.*", "freezer", 90),
     ("frozen-freezer", None, "frozen.*", "freezer", 180),
     ("pantry-pantry", None, "pantry.*", "pantry", 365),
     ("pantry-cupboard", None, "pantry.*", "cupboard", 365),
+    ("pantry-condiments-fridge", None, "pantry.condiments", "fridge", 60),
+    ("pantry-spreads-fridge", None, "pantry.spreads", "fridge", 60),
+    ("pantry-pickles-fridge", None, "pantry.pickles", "fridge", 14),
+    ("pantry-sauces-fridge", None, "pantry.sauces", "fridge", 60),
     ("snacks-pantry", None, "snacks.*", "pantry", 90),
     ("drinks-fridge", None, "drinks.*", "fridge", 30),
     ("drinks-pantry", None, "drinks.*", "pantry", 180),
-    ("bar-any", None, "bar.*", "*", 365),
-    ("household-any", None, "household.*", "*", 730),
 
-    # A date would be actively misleading for these categories. Higher priority
-    # makes these opt-outs beat the older catch-all built-ins on upgraded DBs.
-    ("bar-no-estimate", None, "bar.*", "*", 0, 100, 1),
-    ("household-no-estimate", None, "household.*", "*", 0, 100, 1),
-    ("spices-no-estimate", None, "pantry.spices", "*", 0, 100, 1),
+    # A date would be actively misleading for these categories.
+    ("bar-no-estimate", None, "bar.*", "*", 0, 0, 1),
+    ("household-no-estimate", None, "household.*", "*", 0, 0, 1),
+    ("spices-no-estimate", None, "pantry.spices", "*", 0, 0, 1),
 
     # Total deterministic fallback: every new item receives an estimate.
     ("fallback-fridge", None, None, "fridge", 4),
@@ -95,6 +112,26 @@ DEFAULT_RULES = (
     ("fallback-cupboard", None, None, "cupboard", 365),
     ("fallback-any", None, None, "*", 30),
 )
+
+
+def mode(con) -> str | None:
+    """'on', 'off', or None while the household hasn't been asked. Only 'on' estimates."""
+    try:
+        row = con.execute("SELECT value FROM settings WHERE key = ?", (SETTING,)).fetchone()
+    except sqlite3.OperationalError:  # the migration was deferred: no settings table yet
+        return None
+    return row[0] if row else None
+
+
+def set_mode(con, value: str) -> None:
+    """Only the switch: rows already logged keep their dates, or their lack of one."""
+    if value not in ("on", "off"):
+        raise ValueError("expiration estimates are on or off")
+    con.execute(
+        """INSERT INTO settings (key, value) VALUES (?, ?)
+           ON CONFLICT(key) DO UPDATE SET value = excluded.value""",
+        (SETTING, value),
+    )
 
 
 def seed(con) -> None:

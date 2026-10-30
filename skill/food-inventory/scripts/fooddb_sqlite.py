@@ -21,6 +21,7 @@ Usage:
   python3 fooddb_sqlite.py inventory [--where "location='bar'"] [--limit 50]
   python3 fooddb_sqlite.py expiring [--days 3 | --on 2026-08-16] [--limit 500]
   python3 fooddb_sqlite.py expired [--limit 500]
+  python3 fooddb_sqlite.py expiration-estimates [--set on|off]  # prints on, off or undecided
   python3 fooddb_sqlite.py expiration-refresh [--apply]  # preview by default
   python3 fooddb_sqlite.py find --q "disaronno"        # searches current inventory by default
   python3 fooddb_sqlite.py find --q "disaronno" --all  # searches full history
@@ -372,13 +373,17 @@ def add_item(con: sqlite3.Connection, obj: dict, merge: bool = True):
         core = _core()
         if core:
             try:
-                estimate = core.expiration.estimate(con, obj)
-                if estimate:
+                estimate = core.expiration.estimate(con, obj) if core.expiration.mode(con) == "on" else None
+                if estimate is None:
+                    pass
+                elif not estimate:
+                    print("warning: no expiration rule matched; logging without a date", file=sys.stderr)
+                elif (estimate.get("expirationDate") or "9") >= dt.date.today().isoformat():
+                    # an estimate already over when logged (an old receipt) would land straight in
+                    # Past date, so the item goes in undated instead
                     expiration_date = estimate.get("expirationDate")
                     expiration_source = estimate.get("expirationSource")
                     expiration_rule_id = estimate.get("expirationRuleId")
-                else:
-                    print("warning: no expiration rule matched; logging without a date", file=sys.stderr)
             except Exception as e:  # expiration intelligence must never block plain logging
                 print(f"warning: expiration estimate skipped ({e}); logging without a date", file=sys.stderr)
 
@@ -926,6 +931,19 @@ def main():
         return
 
     init_db(con)
+
+    if args.cmd == "expiration-estimates":
+        core = _core()
+        if not core:
+            raise SystemExit("foodcore could not be loaded; expiration estimates are unavailable")
+        if args.set:
+            try:
+                with con:
+                    core.expiration.set_mode(con, args.set)
+            except ValueError as e:
+                raise SystemExit(str(e))
+        print(core.expiration.mode(con) or "undecided")
+        return
 
     if args.cmd == "expiration-refresh":
         core = _core()

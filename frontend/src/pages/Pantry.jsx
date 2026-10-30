@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
-import { get, post, patch } from '../lib/api'
+import { get, post, patch, put } from '../lib/api'
 import { cap, plural, qtyText } from '../lib/format'
 import { useSheet } from '../components/Sheet'
 import { useToast } from '../components/Toasts'
@@ -144,6 +144,11 @@ export default function Pantry() {
   const deptCounts = {}
   for (const i of items) if (view === 'past' ? i.state === 'expired' : i.state !== 'expired') deptCounts[i.dept || 'other'] = (deptCounts[i.dept || 'other'] || 0) + 1
   const ov = data.overview
+  const estimates = data.settings?.expirationEstimates
+  const setEstimates = async (value) => {
+    await put('/settings', { expirationEstimates: value })
+    actions.refresh()
+  }
 
   return (
     <div>
@@ -156,6 +161,16 @@ export default function Pantry() {
         {useFirst.length > 0 && <>Use <b>{useFirst.length}</b> in the next three days.</>}
         {ov.stock.priced > 0 && <> The {ov.stock.priced} with a known price come to <b>${Math.round(ov.stock.value).toLocaleString()}</b>.</>}
       </p>
+
+      {!estimates && (
+        <section className="section panel" aria-labelledby="estimates">
+          <h2 className="section-title" id="estimates">Estimate a use-by date when an item is logged without one?</h2>
+          <div className="btn-row" style={{ marginTop: 12 }}>
+            <button className="btn btn--ink" onClick={() => setEstimates('on')}>Estimate dates</button>
+            <button className="btn" onClick={() => setEstimates('off')}>Leave blank</button>
+          </div>
+        </section>
+      )}
 
       {view === 'stock' && useFirst.length > 0 && (
         <section className="section" aria-labelledby="usefirst">
@@ -242,6 +257,17 @@ export default function Pantry() {
           </div>
         </section>
       ))}
+
+      {estimates && (
+        <div className="page-foot">
+          <span id="estimates-switch">Estimated use-by dates</span>
+          <div className="theme-toggle" role="group" aria-labelledby="estimates-switch">
+            {['off', 'on'].map((v) => (
+              <button key={v} aria-pressed={estimates === v} onClick={() => setEstimates(v)}>{cap(v)}</button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

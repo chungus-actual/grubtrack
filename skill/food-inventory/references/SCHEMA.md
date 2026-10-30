@@ -68,15 +68,15 @@ All fields are optional except: `id`, `createdAt`, and at least one of `name` or
 
 Pending state file: `pending.json` beside `food.db`.
 
-Used to store an "open" submission while the agent asks for missing required information. A missing
-expiration date alone no longer needs pending state: GrubTrack records a labeled rule estimate.
-See `scripts/pending.js`.
+Used to store an "open" submission while the agent asks for missing info (especially expiration
+dates, unless `expiration-estimates` is on). See `scripts/pending.js`.
 
 
-## Foodcore schema v3
+## Foodcore schema v4
 
-`PRAGMA user_version` = 3. Code: `scripts/foodcore/`. Migration adds expiration-rule support without
-assigning dates to legacy undated items or recalculating existing estimates. Preview catalog changes
+`PRAGMA user_version` = 4. Code: `scripts/foodcore/`. Migration adds expiration-rule support without
+assigning dates to legacy undated items or recalculating existing estimates. Estimates stay off until
+`settings.expirationEstimates` is `on`, and turning them on changes no existing row. Preview catalog changes
 with `python3 scripts/fooddb_sqlite.py expiration-refresh`; `--apply` performs the displayed changes.
 Built-ins are conservative household estimates informed by USDA FoodKeeper and its cold-storage
 chart, not package dates or food-safety guarantees.
@@ -90,6 +90,7 @@ chart, not package dates or food-safety guarantees.
 | `store_aliases` | spelling of a store | `alias` → `storeId` |
 | `item_price_audit` | correction to `items.price` | `oldPrice`, `newPrice`, `reason`, `at` |
 | `expiration_rules` | shelf-life rule | optional canonical `generic` or taxonomy `category`, `storage`, `days`, `priority`, `enabled`, `noEstimate`, `source` |
+| `settings` | household setting | `key`, `value` (`expirationEstimates`: `on` or `off`; no row = not asked yet) |
 
 | Added column | Meaning |
 |---|---|
@@ -106,6 +107,6 @@ chart, not package dates or food-safety guarantees.
 | A reconciled receipt's lines outrank item-level prices for that receipt | trigger + `import_receipt` |
 | Same item code at the same chain = same product | `ledger.sweep` |
 | A category set by a person (`catSource='user'`) is never re-classified | `ledger.sweep` |
-| An explicit expiration date wins; otherwise the highest-priority most-specific enabled rule supplies an estimate or an intentional no-date result | `expiration.estimate` |
+| An explicit expiration date wins; with estimates on, the highest-priority most-specific enabled rule supplies an estimate or an intentional no-date result | `expiration.estimate` |
 
 Taxonomy: 12 departments, `dept.cat` keys (`python3 fooddb_sqlite.py categories`).

@@ -1,7 +1,7 @@
 ---
 name: food-inventory
 description: Log and query the household's food and bar inventory, receipts, prices and grocery spend (GrubTrack's food.db). Use for grocery, pantry, fridge or receipt photos; "what do we have", what's expiring, meal ideas; what X cost, where it's cheaper, whether it went up, and what we spent.
-version: 2.2.0
+version: 2.3.0
 license: MIT
 homepage: https://github.com/chungus-actual/grubtrack
 metadata:
@@ -38,11 +38,16 @@ who, where to confirm, house conventions) and wins where it disagrees with this 
 ### 0) Required fields and acknowledgment
 
 - Required to say **"Logged"**: `storage` + some `name` (or `Unknown item #1/#2`).
-- If `expirationDate` is absent, GrubTrack assigns a deterministic shelf-life estimate from its
+- `expiration-estimates` prints `on`, `off` or `undecided`, and only `on` estimates. Unless it is
+  `on`: if `expirationDate` is missing or uncertain, say **"Logged (missing exp date)"** and ask
+  immediately.
+- With `on`, an item logged without a date gets a deterministic shelf-life estimate from the
   `expiration_rules` table when one is appropriate. Report it as an **estimated use-by date**, never
-  as a package date. Some categories intentionally remain undated.
+  as a package date. Some categories intentionally remain undated, and so does an item whose
+  estimate would already be past.
 - A household may put `expiration_prompt: always` in `LOCAL.md` to request a printed date before
-  accepting an estimate. Otherwise, log immediately and use the labeled estimate.
+  accepting an estimate.
+- Never claim an expiration date was logged unless it is present in the record.
 - Never claim that an estimated date was printed on the product.
 - Never present an estimate as a food-safety guarantee. Package instructions, recalls, temperature
   history, and signs of spoilage take precedence.
@@ -59,15 +64,15 @@ who, where to confirm, house conventions) and wins where it disagrees with this 
 
 Expiration parsing:
 - If the stamp is partial (`202_`) or ambiguous, **do not** fill `expirationDate`.
-- Put the raw stamp in `notes`; GrubTrack will apply and label an appropriate deterministic estimate.
-  Ask for the printed date only when `LOCAL.md` requests it or the person wants to replace an estimate.
+- Put the raw stamp in `notes` and ask the person to type the date. With estimates `on`, ask only when
+  `LOCAL.md` requests it or the person wants to replace an estimate.
 
 ### 2) Pending submissions when something important is missing
 
 Pending state makes follow-ups deterministic. Helper: `node {baseDir}/scripts/pending.js`
 (`pending.json` sits beside `food.db`).
 
-If another required key field is missing:
+If `expirationDate` (unless estimates are `on`) or another key field is missing:
 1) Create a pending entry (one per photo) with the extracted items and the missing fields.
 2) Ask for the missing info **in the same thread**, in one message with a copy-paste format.
 
@@ -77,7 +82,7 @@ Example follow-up (two items):
 ### 3) Save the records
 
 - One record per distinct product.
-- Prefer a labeled deterministic estimate over an invented package date.
+- Prefer incomplete over invented. An estimate only ever comes from GrubTrack, labeled.
 - Add `confidence` when a field is inferred.
 
 ### 4) Store the image
@@ -93,8 +98,8 @@ Bar defaults:
 - `storage` is the temperature class: default `cupboard`, `fridge` when refrigerated
 - A dedicated drink fridge: `storage=fridge` + `location=drink fridge`
 
-Several items in one photo can be told apart with `left/right` or `1/2`. If an expiration date can't
-be read, follow the household's `LOCAL.md` prompting preference.
+Several items in one photo can be told apart with `left/right` or `1/2`. If an exp date can't be
+read, ask once, immediately (with estimates `on`, follow the household's `LOCAL.md` preference).
 
 ## Commands
 
@@ -103,7 +108,12 @@ be read, follow the household's `LOCAL.md` prompting preference.
 ```bash
 python3 {baseDir}/scripts/fooddb_sqlite.py where   # which food.db, and whether it exists yet
 python3 {baseDir}/scripts/fooddb_sqlite.py init    # create it (safe to re-run)
+python3 {baseDir}/scripts/fooddb_sqlite.py expiration-estimates           # on, off or undecided
+python3 {baseDir}/scripts/fooddb_sqlite.py expiration-estimates --set on  # or off
 ```
+
+Setting up a new household: ask once whether to estimate use-by dates for things logged without one,
+and set the answer. Items already logged keep their dates, or their lack of one, either way.
 
 ### Add an item
 
@@ -265,8 +275,8 @@ Every row gets a department and category automatically (`dept`, `cat`, e.g. `dai
 
 ## Guardrails
 
-- **No hallucinated package dates.** If unreadable, leave the explicit field blank or keep the raw
-  text; GrubTrack's rule-generated estimate remains visibly identified as an estimate.
+- **No hallucinated expiration dates.** If unreadable, leave blank or keep the raw text. A
+  rule-generated estimate from GrubTrack stays visibly identified as an estimate.
 - A receipt photo may show names or card digits; don't echo them back unless asked. Never put full
   card numbers, auth codes or reference numbers in a receipt's `payment`.
 - Confirm in the chat the request came from.

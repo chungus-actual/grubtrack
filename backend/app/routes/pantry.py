@@ -7,7 +7,7 @@ from collections import Counter
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 
-from ..db import fdb, get_con, images_for, intel, item_out, ledger, today
+from ..db import expiration, fdb, get_con, images_for, intel, item_out, ledger, today
 
 router = APIRouter(prefix="/api")
 
@@ -52,7 +52,18 @@ def pantry(con=Depends(get_con)):
         "facets": {"depts": dict(depts), "cats": dict(cats), "storage": dict(storage), "states": dict(states)},
         "overview": intel.overview(con),
         "taxonomy": intel.taxonomy(),
+        "settings": {"expirationEstimates": expiration.mode(con)},
     }
+
+
+@router.put("/settings")
+def settings(data: dict = Body(...), con=Depends(get_con)):
+    value = data.get("expirationEstimates")
+    if value not in ("on", "off"):
+        raise HTTPException(400, "expirationEstimates must be on or off")
+    with con:
+        expiration.set_mode(con, value)
+    return {"expirationEstimates": value}
 
 
 @router.get("/items/{item_id}")

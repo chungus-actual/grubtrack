@@ -140,6 +140,7 @@ img { max-width: 100%; display: block; }
   padding: 18px;
 }
 .panel--flush { padding: 0; overflow: hidden; }
+.page-foot { display: flex; align-items: center; gap: 10px; margin-top: 28px; color: var(--ink-3); font-size: var(--t-sm); }
 
 /* --------------------------------------------------------------- controls */
 
