@@ -155,6 +155,25 @@ A pantry row is in date, then **Use first** (dated today through the next three 
 the Pantry page), then past its date. A restock of something already in the house merges into its
 row; the ledger keeps the old price. **Still good** on a past-date row gives it seven more days.
 
+When a newly logged row has no explicit use-by date, GrubTrack can assign a deterministic estimate
+from the SQLite `expiration_rules` catalog. Rules match the taxonomy's canonical product or category
+plus its storage location; examples include bananas, lettuce and bagels. A restock estimate never
+replaces an existing printed or user-entered date. The Pantry labels generated and user-adjusted
+dates, and each estimate retains the rule id that produced it. Higher-priority household rules can
+override the built-ins without an application-code change. Spirits, household supplies and spices
+use explicit no-estimate rules because a made-up use-by date would be misleading. If rule evaluation
+is unavailable, inventory logging still succeeds without a date.
+
+Migrations never assign dates to legacy undated rows and never recalculate existing estimates.
+Use `fooddb_sqlite.py expiration-refresh` to preview the exact changes a revised catalog would make;
+add `--apply` only after reviewing that output. This keeps rule maintenance from unexpectedly moving
+items into **Past date** or out of recipe suggestions.
+The built-in household defaults are conservative estimates informed by the USDA
+[FoodKeeper](https://www.foodsafety.gov/keep-food-safe/foodkeeper-app) and
+[cold-storage chart](https://www.foodsafety.gov/food-safety-charts/cold-food-storage-charts).
+They are not package dates or a food-safety guarantee: package instructions, recalls, temperature
+history, and signs of spoilage take precedence.
+
 Past-date items stay on the Pantry page under **Past date** until someone marks them, one at a time
 or a whole department at once. Marking is a soft delete that records the fate: **Ate it** feeds the
 restock ideas on the List page, **Tossed** feeds the waste numbers on the Spend page, and both
@@ -382,6 +401,7 @@ image and the from-source steps above do.
 | Sold-by-weight packages are compared only when the weight is known | two packs of deli turkey say nothing per pound |
 | A buying rhythm predicts a due date only after three purchases | two purchases are a gap, not a rhythm |
 | A category set by hand is never changed back | a correction should only have to be made once |
+| Explicit use-by dates win; otherwise `expiration_rules` may supply a labeled estimate | reminders stay deterministic without pretending every item needs a date |
 | Deleting a pantry item is soft and records eaten or tossed | that's what the restock ideas and the waste numbers learn from |
 
 ## Development
