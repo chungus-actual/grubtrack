@@ -72,14 +72,14 @@ Used to store an "open" submission while the agent asks for missing info (especi
 dates, unless `expiration-estimates` is on). See `scripts/pending.js`.
 
 
-## Foodcore schema v4
+## Foodcore schema v5
 
-`PRAGMA user_version` = 4. Code: `scripts/foodcore/`. Migration adds expiration-rule support without
+`PRAGMA user_version` = 5. Code: `scripts/foodcore/`. Migration adds expiration-rule support without
 assigning dates to legacy undated items or recalculating existing estimates. Estimates stay off until
 `settings.expirationEstimates` is `on`, and turning them on changes no existing row. Preview catalog changes
 with `python3 scripts/fooddb_sqlite.py expiration-refresh`; `--apply` performs the displayed changes.
-Built-ins are conservative household estimates informed by USDA FoodKeeper and its cold-storage
-chart, not package dates or food-safety guarantees.
+Built-ins sit at the top of the typical range across USDA FoodKeeper, its cold-storage chart and
+university extension charts; they are not package dates or food-safety guarantees.
 
 | Table | One row per | Key columns |
 |---|---|---|

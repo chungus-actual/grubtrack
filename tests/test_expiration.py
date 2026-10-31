@@ -25,7 +25,9 @@ def _item(con, item_id):
 
 
 def test_migration_seeds_reviewable_rule_table(con):
-    assert con.execute("PRAGMA user_version").fetchone()[0] == 4
+    from foodcore import schema
+
+    assert con.execute("PRAGMA user_version").fetchone()[0] == schema.VERSION
     count = con.execute("SELECT count(*) FROM expiration_rules WHERE source = 'built-in'").fetchone()[0]
     assert count >= 50
 
@@ -51,7 +53,7 @@ def test_banana_and_lettuce_use_specific_rules(cli, con):
     banana = _item(con, _add(cli, name="Bananas", storage="counter", purchaseDate=_in(0)))
     lettuce = _item(con, _add(cli, name="Green lettuce", storage="fridge", purchaseDate=_in(0)))
 
-    assert banana["expirationDate"] == _in(5)
+    assert banana["expirationDate"] == _in(4)
     assert banana["expirationSource"] == "estimated"
     assert banana["expirationRuleId"] == "banana-counter"
     assert lettuce["expirationDate"] == _in(7)
@@ -62,7 +64,7 @@ def test_banana_in_pantry_uses_product_rule_not_yearlong_fallback(cli, con):
     banana = _item(con, _add(
         cli, name="Bananas", storage="pantry", purchaseDate=_in(0),
     ))
-    assert banana["expirationDate"] == _in(5)
+    assert banana["expirationDate"] == _in(4)
     assert banana["expirationRuleId"] == "banana-any"
 
 
@@ -185,7 +187,7 @@ def test_rule_refresh_is_preview_only_until_explicitly_applied(cli, con):
     assert preview["applied"] is False
     assert preview["changes"] == [{
         "id": item_id, "name": "Blueberry bagel",
-        "oldDate": "2027-10-30", "newDate": _in(7),
+        "oldDate": "2027-10-30", "newDate": _in(5),
         "oldSource": "estimated", "newSource": "estimated",
         "oldRuleId": "fallback-pantry", "newRuleId": "bagel-any",
     }]
@@ -194,7 +196,7 @@ def test_rule_refresh_is_preview_only_until_explicitly_applied(cli, con):
     applied = json.loads(cli("expiration-refresh", "--apply").stdout)
     assert applied["applied"] is True
     assert applied["count"] == 1
-    assert _item(con, item_id)["expirationDate"] == _in(7)
+    assert _item(con, item_id)["expirationDate"] == _in(5)
 
 
 def _unasked(con):
@@ -237,25 +239,26 @@ def test_an_estimate_already_over_when_logged_is_not_applied(cli, con):
     assert item["expirationSource"] is None
     assert item["expirationRuleId"] is None
     # still ahead, counted from the purchase
-    assert _item(con, _add(cli, name="Bananas", storage="counter", purchaseDate=_in(-2)))["expirationDate"] == _in(3)
+    assert _item(con, _add(cli, name="Bananas", storage="counter", purchaseDate=_in(-2)))["expirationDate"] == _in(2)
 
 
 def test_long_keeping_fridge_items_do_not_get_the_four_day_fallback(cli, con):
     for name, storage, rule, days in (
-        ("Yellow mustard", "fridge", "pantry-condiments-fridge", 60),
-        ("Mayonnaise", "fridge", "pantry-condiments-fridge", 60),
-        ("Dill pickles", "fridge", "pantry-pickles-fridge", 14),
-        ("Olives", "fridge", "pantry-pickles-fridge", 14),
+        ("Yellow mustard", "fridge", "pantry-condiments-fridge", 90),
+        ("Mayonnaise", "fridge", "mayo-fridge", 60),
+        ("Dill pickles", "fridge", "pantry-pickles-fridge", 30),
+        ("Olives", "fridge", "olive-fridge", 14),
         ("Teriyaki sauce", "fridge", "pantry-sauces-fridge", 60),
-        ("Marinara sauce", "fridge", "pasta-sauce-fridge", 4),
-        ("Pesto", "fridge", "pesto-fridge", 3),
-        ("Strawberry jam", "fridge", "pantry-spreads-fridge", 60),
+        ("Marinara sauce", "fridge", "pasta-sauce-fridge", 5),
+        ("Pesto", "fridge", "pesto-fridge", 5),
+        ("Strawberry jam", "fridge", "pantry-spreads-fridge", 180),
         ("Salted butter", "fridge", "butter-fridge", 30),
         ("Sour cream", "fridge", "sour-cream-fridge", 14),
-        ("Oat creamer", "fridge", "dairy-creamer-fridge", 14),
-        ("Garlic", "counter", "garlic-counter", 30),
+        ("Oat creamer", "fridge", "dairy-creamer-fridge", 21),
+        ("Potatoes", "counter", "potato-counter", 21),
+        ("Garlic", "counter", "garlic-counter", 90),
         ("Yellow onion", "counter", "produce-aromatics-counter", 14),
-        ("Ginger", "counter", "ginger-counter", 2),
+        ("Ginger", "counter", "ginger-counter", 7),
     ):
         item = _item(con, _add(cli, name=name, storage=storage))
         assert (item["expirationRuleId"], item["expirationDate"]) == (rule, _in(days)), name
@@ -294,3 +297,31 @@ def test_v3_database_retires_the_rules_the_opt_outs_replaced(con):
     assert rules["bar-no-estimate"] == 0
     assert rules["my-rule"] == 100
     assert con.execute("SELECT count(*) FROM settings").fetchone()[0] == 0
+
+
+def test_v4_database_moves_seeded_rules_but_not_edited_ones_or_item_dates(cli, con):
+    from foodcore import schema
+
+    item_id = _add(cli, name="Strawberries", storage="fridge")
+    dated = _item(con, item_id)["expirationDate"]
+    assert dated == _in(3)
+    con.execute("UPDATE expiration_rules SET days = 5 WHERE id = 'strawberry-fridge'")
+    con.execute("UPDATE expiration_rules SET days = 9 WHERE id = 'spinach-fridge'")   # a household's edit
+    con.execute("DELETE FROM expiration_rules WHERE id = 'mayo-fridge'")
+    con.execute("UPDATE items SET expirationDate = ? WHERE id = ?", (_in(5), item_id))
+    con.execute("PRAGMA user_version = 4")
+
+    assert schema.migrate(con) == schema.VERSION
+    days = {r["id"]: r["days"] for r in con.execute("SELECT id, days FROM expiration_rules")}
+    assert days["strawberry-fridge"] == 3
+    assert days["spinach-fridge"] == 9
+    assert days["mayo-fridge"] == 60
+    assert _item(con, item_id)["expirationDate"] == _in(5)
+
+
+def test_every_revision_names_a_seeded_rule_at_its_new_number():
+    from foodcore import expiration
+
+    seeded = {r[0]: r[4] for r in expiration.DEFAULT_RULES}
+    for rule, _old, new in expiration.REVISED:
+        assert seeded[rule] == new, rule

@@ -22,6 +22,7 @@ Version lives in PRAGMA user_version (food.db was 0 before this). Version 3 adds
 the expiration-rule catalog, estimate provenance, explicit no-estimate rules,
 and migration safeguards that leave existing pantry dates alone. Version 4 adds the
 settings table that makes estimates opt-in, and retires two rules the opt-outs replaced.
+Version 5 moves seeded shelf-life rules to numbers checked across sources.
 """
 
 from __future__ import annotations
@@ -30,7 +31,7 @@ import sqlite3
 
 from . import expiration
 
-VERSION = 4
+VERSION = 5
 
 # milliseconds: whether a logged price came before or after a receipt was recorded decides
 # whether it was a guess at that receipt (ledger._GUESS); seconds tie too easily
@@ -235,6 +236,7 @@ def migrate(con: sqlite3.Connection) -> int:
         con.execute("ALTER TABLE expiration_rules ADD COLUMN noEstimate INTEGER NOT NULL DEFAULT 0")
     con.execute("DELETE FROM expiration_rules WHERE source = 'built-in' AND id IN ('bar-any', 'household-any')")
     con.execute("UPDATE expiration_rules SET priority = 0 WHERE source = 'built-in' AND noEstimate = 1")
+    expiration.revise(con)
     expiration.seed(con)
     con.execute("CREATE INDEX IF NOT EXISTS idx_items_product ON items(productId)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_items_cat ON items(cat)")

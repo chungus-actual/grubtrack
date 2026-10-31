@@ -174,9 +174,10 @@ Migrations never assign dates to legacy undated rows and never recalculate exist
 Use `fooddb_sqlite.py expiration-refresh` to preview the exact changes a revised catalog would make;
 add `--apply` only after reviewing that output. This keeps rule maintenance from unexpectedly moving
 items into **Past date** or out of recipe suggestions.
-The built-in household defaults are conservative estimates informed by the USDA
-[FoodKeeper](https://www.foodsafety.gov/keep-food-safe/foodkeeper-app) and
-[cold-storage chart](https://www.foodsafety.gov/food-safety-charts/cold-food-storage-charts).
+The built-in household defaults sit at the top of the typical range across the USDA
+[FoodKeeper](https://www.foodsafety.gov/keep-food-safe/foodkeeper-app), the
+[cold-storage chart](https://www.foodsafety.gov/food-safety-charts/cold-food-storage-charts) and
+university extension charts, counting charts that copy each other once.
 They are not package dates or a food-safety guarantee: package instructions, recalls, temperature
 history, and signs of spoilage take precedence.
 
