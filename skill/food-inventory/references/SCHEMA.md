@@ -72,9 +72,9 @@ Used to store an "open" submission while the agent asks for missing info (especi
 dates, unless `expiration-estimates` is on). See `scripts/pending.js`.
 
 
-## Foodcore schema v5
+## Foodcore schema v6
 
-`PRAGMA user_version` = 5. Code: `scripts/foodcore/`. Migration adds expiration-rule support without
+`PRAGMA user_version` = 6. Code: `scripts/foodcore/`. Migration adds expiration-rule support without
 assigning dates to legacy undated items or recalculating existing estimates. Estimates stay off until
 `settings.expirationEstimates` is `on`, and turning them on changes no existing row. Preview catalog changes
 with `python3 scripts/fooddb_sqlite.py expiration-refresh`; `--apply` performs the displayed changes.

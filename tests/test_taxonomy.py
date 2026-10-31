@@ -100,3 +100,25 @@ def test_every_category_belongs_to_a_department():
 def test_unknown_is_low_confidence_not_a_guess():
     got = classify("Zorblax")
     assert got["cat"] == "other.other" and got["confidence"] == "low" and got["generic"] is None
+
+
+@pytest.mark.parametrize("name,storage,cat,generic", [
+    ("BBQ teriyaki chicken", "fridge", "deli.meals", "teriyaki chicken"),
+    ("Teriyaki sauce", "fridge", "pantry.sauces", "teriyaki"),
+    ("Sour cream & onion corn", "pantry", "snacks.chips", "chip"),
+    ("Sour cream", "fridge", "dairy.butter", "sour cream"),
+    ("Raspberry quinoa bark", "pantry", "snacks.sweets", "chocolate"),
+    ("Quinoa", "pantry", "pantry.grains", "quinoa"),
+    ("Okonomiyaki Japanese vegetable pancake", None, "frozen.apps", "okonomiyaki"),
+    ("Hummus olive tapenade", "fridge", "deli.dips", "tapenade"),
+    ("Castelvetrano olives", "fridge", "pantry.pickles", "olive"),
+    ("Trader Joe's Basil Pesto Sauce", "fridge", "pantry.sauces", "pesto"),
+    ("Olive & basil pesto sauce", "fridge", "pantry.sauces", "pesto"),
+    ("Salad complete crispy kit", "fridge", "produce.saladkits", "salad kit"),
+    ("Fire roasted diced green chilies 4 oz", "pantry", "pantry.canned", "canned chili"),
+    ("Fire roasted green chilies", "pantry", "pantry.canned", "canned chili"),
+    ("Hatch green chilies", "fridge", "produce.vegetables", "green chili"),
+])
+def test_misfiles_found_in_a_real_pantry(name, storage, cat, generic):
+    placed = classify(name, storage=storage)
+    assert (placed["cat"], placed["generic"]) == (cat, generic)

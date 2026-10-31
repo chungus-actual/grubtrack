@@ -22,7 +22,8 @@ Version lives in PRAGMA user_version (food.db was 0 before this). Version 3 adds
 the expiration-rule catalog, estimate provenance, explicit no-estimate rules,
 and migration safeguards that leave existing pantry dates alone. Version 4 adds the
 settings table that makes estimates opt-in, and retires two rules the opt-outs replaced.
-Version 5 moves seeded shelf-life rules to numbers checked across sources.
+Version 5 moves seeded shelf-life rules to numbers checked across sources. Version 6 seeds
+short rules for opened pizza sauce, tomato sauce and tomato paste.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ import sqlite3
 
 from . import expiration
 
-VERSION = 5
+VERSION = 6
 
 # milliseconds: whether a logged price came before or after a receipt was recorded decides
 # whether it was a guess at that receipt (ledger._GUESS); seconds tie too easily

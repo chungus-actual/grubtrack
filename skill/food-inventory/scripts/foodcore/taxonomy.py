@@ -70,7 +70,7 @@ arugula; kale = baby kale, lacinato; spring mix = mixed green, mesclun, salad mi
 chard = swiss chard; collard = collard green; microgreen; watercress
 
 [produce.saladkits | Salad Kits | 3]
-salad kit = chopped salad kit, caesar kit, caesar salad kit, bag salad, bagged salad, chopped salad, crunch salad,
+salad kit = salad complete, chopped salad kit, caesar kit, caesar salad kit, bag salad, bagged salad, chopped salad, crunch salad,
 salad blend, chopped salad blend
 
 [produce.herbs | Fresh Herbs | 1]
@@ -113,13 +113,14 @@ prosciutto; deli meat = lunch meat, cold cut, sandwich meat, deli slice, breast 
 [deli.meals | Prepared Meals | 3]
 prepared meal = prepared, ready meal, ready to eat; bowl = grain bowl, rice bowl, burrito bowl, poke bowl;
 sandwich = sub, hoagie, panini, uncrustable; wrap; burrito = breakfast burrito; meal kit = pizza meal kit;
-rotisserie chicken; sushi; entree; pizza; calzone; quesadilla; taco kit
+rotisserie chicken; sushi; entree; pizza; calzone; quesadilla; taco kit; teriyaki chicken = bbq teriyaki chicken
 
 [deli.salads | Prepared Salads | 3]
 salad = beet salad, better beet salad, greek salad, caesar salad; potato salad; pasta salad; chicken salad; egg salad;
 tuna salad; coleslaw = slaw
 
 [deli.dips | Dips & Spreads | 2]
+tapenade = olive tapenade;
 hummus = organic original hummus; guacamole = guac; dip = spinach dip, queso dip, onion dip; tzatziki; pico de gallo = salsa fresca;
 pimento cheese; baba ganoush
 
@@ -180,6 +181,7 @@ riced cauliflower; stir fry vegetable
 frozen fruit = frozen berry, frozen mango, frozen strawberry, frozen blueberry, acai pack
 
 [frozen.apps | Dumplings & Appetizers | 2]
+okonomiyaki = japanese vegetable pancake, vegetable pancake;
 dumpling = potsticker, gyoza, bao, soup dumpling; egg roll = spring roll; frozen appetizer = pizza roll, taquito,
 mozzarella stick, chicken nugget, nugget, tender
 
@@ -196,6 +198,7 @@ pasta = spaghetti, penne, rigatoni, fusilli, linguine, fettuccine, rotini, farfa
 noodle = ramen noodle, udon, soba, rice noodle, egg noodle, lo mein, glass noodle; lasagna noodle; gnocchi; ravioli = tortellini
 
 [pantry.canned | Canned Goods | 2]
+canned chili = fire roasted green chili, fire roasted diced green chili, diced green chili;
 soup = french onion soup, campbell, campbells, chicken noodle soup, tomato soup, campbell soup; canned tomato = diced tomato,
 crushed tomato, whole peeled tomato, tomato puree, canned tomatoes; canned tuna = tuna; canned salmon; sardine; anchovy;
 canned fruit = mandarin orange cup, fruit cup, pineapple chunk, packed in juice, pineapple slice packed in juice; canned meat = spam, canned chicken; chili = canned chili;
@@ -211,7 +214,7 @@ tinga style chicken broth; bouillon = better than bouillon, broth base, stock cu
 vegetable base
 
 [pantry.sauces | Sauces & Pastes | 2]
-pasta sauce = marinara, marinara sauce, tomato basil sauce, vodka sauce, alfredo, michaels of brooklyn; pesto;
+pasta sauce = marinara, marinara sauce, tomato basil sauce, vodka sauce, alfredo, michaels of brooklyn; pesto = pesto sauce, basil pesto, basil pesto sauce;
 curry paste = red curry paste, green curry paste; curry = curry mix, curry roux, japanese curry, golden curry;
 simmer sauce = tinga, tikka masala sauce, enchilada sauce, mole, cooking sauce; tomato paste; tomato sauce; pizza sauce; teriyaki = teriyaki sauce;
 stir fry sauce; fish sauce; oyster sauce; hoisin; gochujang; chili crisp = chili oil; sauce
@@ -258,7 +261,7 @@ shelf meal = shelf stable meal, microwave meal, ready meal pouch, tasty bite, ch
 yellow tadka, hayashi rice; ramen kit
 
 [snacks.chips | Chips & Popcorn | 2]
-chip = potato chip, tortilla chip, kettle chip, pita chip, veggie chip; popcorn = utz popcorn, popcorn butter, microwave popcorn;
+chip = potato chip, tortilla chip, kettle chip, pita chip, veggie chip, sour cream onion, sour cream and onion; popcorn = utz popcorn, popcorn butter, microwave popcorn;
 kettle corn = kettle popcorn, gg kettle corn; popped chip = popcorners, popcorner; pork rind; cheese puff = puff, cheeto
 
 [snacks.crackers | Crackers & Pretzels | 2]
@@ -274,7 +277,7 @@ protein bar = rxbar, quest bar, one bar; granola bar = nature valley, kind bar, 
 
 [snacks.sweets | Candy & Chocolate | 2]
 candy = gummy, gummi, gummy bear, sour candy, joyride, hormbles; chocolate = dark chocolate, milk chocolate, chocolate bar,
-peanut butter cup; licorice = red vine, twizzler; jelly bean; caramel; marshmallow; pudding; fruit snack
+peanut butter cup, chocolate bark, quinoa bark; licorice = red vine, twizzler; jelly bean; caramel; marshmallow; pudding; fruit snack
 
 [snacks.cookies | Cookies | 2]
 cookie = milano, pepperidge farm milano, oreo, biscotti, shortbread; wafer

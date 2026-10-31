@@ -96,7 +96,7 @@ async def lifespan(app: FastAPI):
     task.cancel()
 
 
-VERSION = "2.4.1"
+VERSION = "2.4.2"
 IMAGE_TYPES = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".pdf"}
 app = FastAPI(title="GrubTrack", version=VERSION, lifespan=lifespan)
 
