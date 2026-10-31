@@ -47,7 +47,6 @@ function ReviewQueue() {
   return (
     <section className="panel">
       <div className="section-head"><h2 className="section-title">Needs a category</h2><span className="section-sub">{data.products.length} unsure</span></div>
-      <p className="note" style={{ marginBottom: 12 }}>The classifier couldn't place these with confidence. A category set here sticks.</p>
       <div className="stack" style={{ gap: 12 }}>
         {data.products.map((p) => (
           <div key={p.id} className="stack" style={{ gap: 6 }}>
@@ -129,9 +128,6 @@ export default function Prices() {
     <div>
       <div className="page-head"><h1 className="page-title">Prices</h1></div>
       {lead ? <p className="lede">{lead}</p> : <p className="lede">Prices appear here as receipts are read.</p>}
-      <p className="note" style={{ marginTop: -12, marginBottom: 8 }}>
-        {plural(ov.products, 'product')} priced from {plural(ov.observations, 'purchase')}, {ov.verified} of them read off receipts and reconciled to the printed total.
-      </p>
 
       <div className="cols cols--2 section">
         <div className="stack" style={{ gap: 28 }}>
@@ -139,7 +135,6 @@ export default function Prices() {
             <section>
               <div className="section-head">
                 <h2 className="section-title">Where it's cheaper</h2>
-                <span className="section-sub">same product, latest shelf price at each store</span>
               </div>
               <GapList rows={(allGaps ? gaps : gaps.slice(0, 8)).map((g) => ({ key: g.productId, name: g.name, basis: g.basis, prices: g.prices, spreadPct: g.spreadPct }))}
                 onPick={(id) => open('product', id)} />
@@ -153,7 +148,6 @@ export default function Prices() {
           <section>
             <div className="section-head">
               <h2 className="section-title">What moved</h2>
-              <span className="section-sub">shelf price, same store, before any sale</span>
             </div>
             {moved.length ? (
               <div className="list list--panel">
@@ -178,7 +172,7 @@ export default function Prices() {
           <ReviewQueue />
           {data.cadence.length > 0 && (
             <section className="panel">
-              <div className="section-head"><h2 className="section-title">Buying rhythm</h2><span className="section-sub">needs 3 purchases to predict</span></div>
+              <div className="section-head"><h2 className="section-title">Buying rhythm</h2></div>
               <div className="list" style={{ margin: '0 -18px -18px' }}>
                 {data.cadence.slice(0, 8).map((c) => (
                   <button key={c.productId} className="row" onClick={() => open('product', c.productId)} style={{ minHeight: 48 }}>

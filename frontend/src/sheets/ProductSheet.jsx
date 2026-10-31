@@ -84,7 +84,6 @@ function EditProduct({ p, taxonomy, onDone }) {
         <label className="field"><span>Package size</span><input className="input" value={f.size} placeholder="32 oz, 1.5 L, dozen" onChange={(e) => setF({ ...f, size: e.target.value })} /></label>
         <label className="field"><span>Kind of thing</span><input className="input" value={f.generic} placeholder="kefir, eggs, olive oil" onChange={(e) => setF({ ...f, generic: e.target.value })} /></label>
       </div>
-      <p className="note">The size turns every purchase into a unit price. The kind of thing groups brands together, so Good & Gather eggs and Pete & Gerry's compare per egg.</p>
       <ErrorBox error={err} />
       <div className="btn-row"><button className="btn btn--ink" type="submit">Save changes</button><button type="button" className="btn btn--ghost" onClick={onDone}>Cancel</button></div>
     </form>
@@ -115,7 +114,7 @@ export default function ProductSheet({ id, onClose }) {
         <>
           {p.last ? (
             <PriceTag size="lg" name={p.name} meta={[p.catLabel, p.size, lastMeta(p.last)].filter(Boolean).join(', ')}
-              price={p.last.price} unit={p.last.unit} unitLabel={p.last.unitLabel} saved={p.last.saved} regular={p.last.regular} />
+              price={p.last.price} unit={p.last.unit} unitLabel={p.last.unitLabel === 'pkg' && p.basis?.label === 'ea' ? 'ea' : p.last.unitLabel} saved={p.last.saved} regular={p.last.regular} />
           ) : (
             <p className="note">No purchases recorded for this product yet.</p>
           )}
@@ -212,15 +211,15 @@ export default function ProductSheet({ id, onClose }) {
               <div className="block-title">Every purchase</div>
               <div className="tbl-wrap">
                 <table className="tbl">
-                  <thead><tr><th>Date</th><th>Store</th><th className="r">Paid</th><th className="r">Shelf</th><th className="r">Unit</th><th>Source</th></tr></thead>
+                  <thead><tr><th>Date</th><th>Store</th><th className="r">Paid</th>{p.observations.some((o) => o.regular) && <th className="r">Shelf</th>}<th className="r hide-sm">Unit</th><th>Source</th></tr></thead>
                   <tbody>
                     {p.observations.map((o) => (
                       <tr key={o.id}>
                         <td className="nowrap">{shortDate(o.date, { year: true })}</td>
                         <td><StoreKey id={o.storeId} name={o.store} /></td>
                         <td className="r">{dollars(o.price)}{o.qty > 1 ? <span className="muted"> for {o.qty}</span> : ''}</td>
-                        <td className="r">{o.regular ? dollars(o.regular) : ''}</td>
-                        <td className="r">{o.unit != null && o.unitLabel !== 'pkg' ? `${unitText(o.unit)}/${o.unitLabel}` : ''}</td>
+                        {p.observations.some((x) => x.regular) && <td className="r">{o.regular ? dollars(o.regular) : ''}</td>}
+                        <td className="r hide-sm">{o.unit != null && o.unitLabel !== 'pkg' ? `${unitText(o.unit)}/${o.unitLabel}` : ''}</td>
                         <td>{o.receiptId
                           ? <button className="btn btn--sm btn--ghost" onClick={() => open('receipt', o.receiptId)}>{o.verified ? 'Receipt' : 'Logged'}</button>
                           : <span className="muted">Logged</span>}</td>
@@ -231,7 +230,7 @@ export default function ProductSheet({ id, onClose }) {
               </div>
             </div>
           )}
-          <p className="block note">Filed under {p.catLabel}{p.catSource === 'user' ? ' (set by hand)' : p.confidence === 'low' ? ', a guess: edit to place it' : ''}.{p.generic ? ` Compared with other ${p.generic}.` : ''}</p>
+          <p className="block note">Filed under {p.catLabel}{p.catSource === 'user' ? ' (set by hand)' : p.confidence === 'low' ? ', a guess: edit to place it' : ''}.</p>
         </>
       )}
     </Sheet>

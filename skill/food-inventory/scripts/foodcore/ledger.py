@@ -71,6 +71,11 @@ def parse_store(text: str | None) -> dict:
         d = (m.group(2) or "").strip().rstrip(".").upper()
         street = " ".join(x for x in (m.group(1), d, m.group(3).strip().title(), m.group(4).title()) if x)
         out["address"] = street.replace(" Boulevard", " Blvd").replace(" Street", " St").replace(" Avenue", " Ave")
+    else:
+        # no street type printed: "..., 2200 West Oak Suite 117, Springfield"
+        m = re.search(r",\s*(\d{2,6}\s+[^,]+?)(?:\s+(?:Suite|Ste|Unit)\b[^,]*)?\s*,", raw, re.I)
+        if m:
+            out["address"] = m.group(1).strip()
     m = _POSTAL.search(raw)
     if m:
         out["postal"] = m.group(1)
@@ -87,7 +92,7 @@ def parse_store(text: str | None) -> dict:
 
 def _store_display(p: dict) -> str:
     where = p.get("branch") or (p.get("address") or "").split(",")[0]
-    where = re.sub(r"^\d+\s+(?:[NSEW]\.?\s+)?", "", where or "")   # "2200 W Oak Ave" -> "Oak Ave"
+    where = re.sub(r"^\d+\s+(?:(?:[NSEW]|North|South|East|West)\.?\s+)?", "", where or "", flags=re.I)   # "2200 W Oak Ave" -> "Oak Ave"
     where = re.sub(r"\s+(?:Blvd|St)$", "", where).strip()
     return f"{p['chain']} {where}".strip() if where else p["chain"]
 
@@ -239,7 +244,8 @@ def reconcile(lines: list[dict], tax, total) -> dict:
     if tot is None:
         return {"lines": s, "tax": t, "total": None, "diff": None, "ok": False}
     diff = round(tot - (s + (t or 0)), 2)
-    return {"lines": s, "tax": t, "total": tot, "diff": diff, "ok": t is not None and abs(diff) <= TOLERANCE}
+    # no tax on the receipt and the lines reach the total: that's a tax-free trip, and it adds up
+    return {"lines": s, "tax": t, "total": tot, "diff": diff, "ok": abs(diff) <= TOLERANCE}
 
 
 def _receipt_id(store_id: str | None, date: str) -> str:
@@ -312,7 +318,10 @@ def import_receipt(con: sqlite3.Connection, data: dict, replace: bool = False, a
     for i, l in enumerate(lines):
         if _num(l.get("price")) is None:
             raise ValueError(f"line {i + 1} ({l.get('raw') or l.get('name')}) has no price")
-    store_id = data.get("storeId") or resolve_store(con, data.get("store"))
+    store_id = data.get("storeId")
+    if store_id and not con.execute("SELECT 1 FROM stores WHERE id = ?", (store_id,)).fetchone():
+        store_id = None   # an id nobody made (an agent's guess) would hide the store on every line
+    store_id = store_id or resolve_store(con, data.get("store"))
     rec = reconcile(lines, data.get("tax"), data.get("total"))
     rid = data.get("id")
     if not rid and rec["total"] is not None:
@@ -645,9 +654,13 @@ def sweep(con: sqlite3.Connection) -> dict:
     products learn taxonomy and size, and only then are amounts and unit prices computed."""
     stats = {"stores": 0, "items": 0, "purchases": 0, "products": 0, "merged": 0, "skipped": 0}
     with con:
-        for r in con.execute("SELECT id, store FROM receipts WHERE storeId IS NULL AND store IS NOT NULL").fetchall():
+        for r in con.execute("SELECT id, store FROM receipts WHERE store IS NOT NULL AND"
+                             " (storeId IS NULL OR storeId NOT IN (SELECT id FROM stores))").fetchall():
             con.execute("UPDATE receipts SET storeId = ? WHERE id = ?", (resolve_store(con, r["store"]), r["id"]))
             stats["stores"] += 1
+        # recorded before a tax-free trip could reconcile
+        con.execute("UPDATE receipts SET reconciled = 1 WHERE reconciled = 0 AND tax IS NULL AND lineCount > 0"
+                    " AND total IS NOT NULL AND ABS(COALESCE(diff, 1)) <= ?", (TOLERANCE,))
 
         # 1. purchases: store/date from the receipt, a product for every line
         for p in con.execute("SELECT p.*, r.date AS rdate, r.storeId AS rstore FROM purchases p"

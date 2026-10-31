@@ -39,7 +39,7 @@ def test_a_store_gap_is_not_a_price_change(cli, con, tmp_path):
     receipt(cli, tmp_path, ALB, "2026-10-21", [{"raw": "KODIAK", "name": "Kodiak waffles", "price": 7.99}])
     p = book(con)["Kodiak waffles"]
     assert p["change"] is None
-    assert p["storeGap"]["cheap"].startswith("Target") and p["storeGap"]["pct"] == pytest.approx(40.4, abs=0.1)
+    assert p["storeGap"]["cheap"].startswith("Target") and p["storeGap"]["pct"] == pytest.approx(28.8, abs=0.1)  # $5.69 against $7.99
     idx = intel.store_index(con)["stores"]
     assert len(idx) == 2 and min(idx.values(), key=lambda v: v["index"])["shared"] == 1
 

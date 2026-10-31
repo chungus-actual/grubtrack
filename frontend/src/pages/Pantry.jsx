@@ -176,12 +176,11 @@ export default function Pantry() {
         <section className="section" aria-labelledby="usefirst">
           <div className="section-head">
             <h2 className="section-title" id="usefirst">Use first</h2>
-            <span className="section-sub">dated today through the next three days</span>
           </div>
-          <div className="chips--scroll" style={{ display: 'flex', gap: 10 }}>
+          <div className="chips--scroll use-first">
             {useFirst.map((i) => (
               <button key={i.id} type="button" className="tag" onClick={() => open('item', i.id)}
-                style={{ minWidth: 190, maxWidth: 230, flex: 'none', textAlign: 'left', cursor: 'pointer', font: 'inherit', color: 'inherit', alignItems: 'start', gridTemplateColumns: '1fr' }}>
+                style={{ textAlign: 'left', cursor: 'pointer', font: 'inherit', color: 'inherit', alignItems: 'start', gridTemplateColumns: '1fr' }}>
                 <div className="tag__desc">
                   <div className="tag__name">{i.name}</div>
                   <div className="tag__meta">{cap(i.storage)}</div>
@@ -218,12 +217,6 @@ export default function Pantry() {
             <button key={d.key} className="chip" aria-pressed={dept === d.key} onClick={() => setDept(d.key)}>{d.label} <span className="n">{deptCounts[d.key]}</span></button>
           ))}
         </div>
-        {view === 'past' && past.length > 0 && (
-          <p className="note" style={{ marginTop: 14 }}>
-            Past their date and still on record. Nothing leaves unless you mark it, and marking keeps the record:{' '}
-            <b>Ate it</b> and <b>Tossed</b> feed the restock ideas and the waste numbers.
-          </p>
-        )}
       </section>
 
       {groups.length === 0 ? (

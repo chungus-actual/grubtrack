@@ -120,7 +120,7 @@ export default function ItemSheet({ id, onClose }) {
             <div className="block">
               <div className="block-title"><span>What it costs</span>
                 <button className="btn btn--sm btn--ghost" onClick={() => open('product', p.id)}>Price history</button></div>
-              <PriceTag name={p.name} meta={lastMeta(p.last)} price={p.last.price} unit={p.last.unit} unitLabel={p.last.unitLabel}
+              <PriceTag name={p.name} meta={lastMeta(p.last)} price={p.last.price} unit={p.last.unit} unitLabel={p.last.unitLabel === 'pkg' && p.basis?.label === 'ea' ? 'ea' : p.last.unitLabel}
                 saved={p.last.saved} regular={p.last.regular} />
               {p.spark?.length > 1 && <div style={{ marginTop: 14 }}><PriceHistory points={p.spark} basis={p.basis} /></div>}
               {p.storeGap && (

@@ -39,7 +39,7 @@ export default function Spend() {
         <p className="lede">
           <b>{dollars(m.total, { cents: false })}</b> on food and household in {monthName(m.month, true)} across {plural(m.trips, 'trip')}
           {m.saved > 0 ? <>, with <b>{dollars(m.saved)}</b> knocked off by sales</> : null}.
-          {' '}The last 30 days come to <b>{dollars(ov.last30, { cents: false })}</b>.
+          {Math.round(ov.last30) !== Math.round(m.total) && <>{' '}The last 30 days come to <b>{dollars(ov.last30, { cents: false })}</b>.</>}
         </p>
       ) : <p className="lede">Spending shows up here once receipts are recorded.</p>}
 
@@ -47,7 +47,6 @@ export default function Spend() {
         <section className="section panel">
           <div className="section-head">
             <h2 className="section-title">By month</h2>
-            <span className="section-sub">pick a month to break it down</span>
           </div>
           <Columns rows={months.map((x) => ({ key: x.month, label: monthName(x.month), value: x.total, sub: `${plural(x.trips, 'trip')}` }))}
             picked={picked} onPick={setMonth} height={190} />
@@ -60,7 +59,6 @@ export default function Spend() {
           {deptRows.length ? (
             <div className="panel"><HBars rows={deptRows} /></div>
           ) : <Empty title="Nothing itemized yet" />}
-          {m?.unitemized > 0.5 && <p className="note" style={{ marginTop: 8 }}>Not itemized is money on a receipt that has no lines yet, like a trip logged by voice without the photo.</p>}
         </section>
         <section>
           <div className="section-head"><h2 className="section-title">Stores</h2></div>
@@ -108,7 +106,7 @@ export default function Spend() {
 
       {sp.loose.length > 0 && (
         <section className="section">
-          <div className="section-head"><h2 className="section-title">Priced without a receipt</h2><span className="section-sub">voice-logged prices with no store attached</span></div>
+          <div className="section-head"><h2 className="section-title">Priced without a receipt</h2></div>
           <div className="list list--panel">
             {sp.loose.map((o) => (
               <div key={o.id} className="row">
@@ -125,7 +123,7 @@ export default function Spend() {
         <p className="soft" style={{ maxWidth: '70ch' }}>
           <b>{w.eaten}</b> eaten and <b>{w.tossed}</b> tossed
           {w.tossedPriced ? <>, the tossed ones worth <b>{dollars(w.tossedUsd)}</b>{w.tossedPriced < w.tossed ? ` (${w.tossedPriced} had a price)` : ''}</> : null}.
-          {w.unknown > 0 && <> Another {w.unknown} were cleared without saying which, so they count as neither.</>}
+          {w.unknown > 0 && <> Another {w.unknown} cleared unmarked.</>}
         </p>
         {w.byCat.length > 0 && (
           <div className="panel panel--flush" style={{ marginTop: 12 }}>

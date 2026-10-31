@@ -186,7 +186,7 @@ def summarize(obs: list[dict]) -> dict:
         if len(latest) >= 2:
             lo = min(latest.values(), key=lambda x: x[1])
             hi = max(latest.values(), key=lambda x: x[1])
-            gap = {"pct": _move(lo[1], hi[1]), "cheap": lo[0]["storeName"], "cheapV": _rv(lo[1]),
+            gap = {"pct": _r((hi[1] - lo[1]) / hi[1] * 100, 1) if hi[1] else None, "cheap": lo[0]["storeName"], "cheapV": _rv(lo[1]),
                    "dear": hi[0]["storeName"], "dearV": _rv(hi[1])}
     stores = defaultdict(list)
     for o in obs:
@@ -333,7 +333,7 @@ def store_index(con: sqlite3.Connection, obs: list[dict] | None = None) -> dict:
         pairs.append({"productId": pid, "name": po[0]["pname"], "generic": po[0]["generic"], "cat": po[0]["cat"],
                       "basis": basis[1], "prices": [{"storeId": k[0], "store": k[1], "avg": _rv(v), "n": len(per[k])}
                                                     for k, v in sorted(means.items(), key=lambda kv: kv[1])],
-                      "cheapest": cheapest[0][1], "spreadPct": _r((dearest[1] - cheapest[1]) / cheapest[1] * 100, 1)})
+                      "cheapest": cheapest[0][1], "spreadPct": _r((dearest[1] - cheapest[1]) / dearest[1] * 100, 1)})
     out = {}
     for sid, rs in ratios.items():
         rs = [r for r in rs if r > 0]

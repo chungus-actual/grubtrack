@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Image as ImageIcon, Link2 } from 'lucide-react'
+import { Image as ImageIcon, Link2, Pencil } from 'lucide-react'
 import { get, img, post } from '../lib/api'
 import { dollars, shortDate, weekday } from '../lib/format'
 import Sheet, { useSheet } from '../components/Sheet'
@@ -80,16 +80,18 @@ export default function ReceiptSheet({ id, onClose }) {
                     {l.regular > l.price && <span className="r-save">Sale savings −{(l.regular - l.price).toFixed(2)}</span>}
                   </button>
                   <div className="r-link">
-                    {l.product && <span>{l.product.name}</span>}
-                    {l.product && <span className="pill">{l.product.catLabel}</span>}
-                    {l.item && (
-                      <button className="pill" style={{ border: 0, cursor: 'pointer' }} onClick={() => open('item', l.item.id)}>
-                        <Link2 aria-hidden="true" />{l.item.name}{l.item.gone ? ' (gone)' : ''}</button>
-                    )}
+                    <div className="r-link__body">
+                      {l.product && l.item?.name !== l.product.name && <span>{l.product.name}</span>}
+                      {l.product && <span className="pill">{l.product.catLabel}</span>}
+                      {l.item && (
+                        <button className="pill" style={{ border: 0, cursor: 'pointer' }} onClick={() => open('item', l.item.id)}>
+                          <Link2 aria-hidden="true" />{l.item.name}{l.item.gone ? ' (gone)' : ''}</button>
+                      )}
+                    </div>
                     <button className="r-relink" onClick={() => setLinking(linking === l.id ? null : l.id)}
                       aria-label={l.item ? `Change which pantry row ${l.name} stocked` : `Link ${l.name} to a pantry row`}
                       title={l.item ? 'Change the pantry link' : 'Link to a pantry row'}>
-                      <Link2 aria-hidden="true" />
+                      {l.item ? <Pencil aria-hidden="true" /> : <Link2 aria-hidden="true" />}
                     </button>
                   </div>
                   {linking === l.id && <LinkPicker rid={r.id} line={l} onDone={() => setLinking(null)} />}
@@ -114,7 +116,7 @@ export default function ReceiptSheet({ id, onClose }) {
           {(r.savings || saved > 0) ? <div className="r-total"><span>You saved</span><span>{(r.savings || saved).toFixed(2)}</span></div> : null}
           {r.paymentNote && <div style={{ marginTop: 6 }}>{r.paymentNote}</div>}
           {r.reconciled ? (
-            <div className="r-check ok">Every line is here: lines plus tax come to the printed total, to the cent.</div>
+            <div className="r-check ok">Every line is here: it adds up to the printed total, to the cent.</div>
           ) : fromReceipt.length ? (
             <div className="r-check bad">Off by {dollars(Math.abs(r.diff || 0))}: a line is missing or misread. Check the lines against the photo.</div>
           ) : (

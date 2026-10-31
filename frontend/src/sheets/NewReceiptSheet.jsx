@@ -32,7 +32,7 @@ function Reconcile({ f }) {
   const sum = cents(priced.reduce((s, l) => s + num(l.price), 0))
   const tax = num(f.tax)
   const total = num(f.total)
-  if (total == null) return <p className="note">Enter the printed total and the lines are checked against it as you go.</p>
+  if (total == null) return null
   const diff = cents(total - sum - (tax || 0))
   const ok = tax != null && Math.abs(diff) <= 0.02
   return (
@@ -169,7 +169,6 @@ export default function NewReceiptSheet({ onClose }) {
             </button>
           </div>
           <Reconcile f={f} />
-          <p className="note">Lines that stocked something in the pantry get linked to it on save, and its price follows the receipt.</p>
           <ErrorBox error={err} />
         </div>
       )}

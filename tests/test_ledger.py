@@ -217,3 +217,50 @@ def test_shouting_headers_find_the_same_store(con):
     assert b != a
     row = con.execute("SELECT chain, name FROM stores WHERE id = ?", (b,)).fetchone()
     assert tuple(row) == ("Northgate Grocery", "Northgate Grocery Pine")
+
+
+TJ = "Trader Joe's #0512, 2200 West Oak Suite 117, Springfield, IL 62704"
+TJ_LINES = [{"raw": "LEMON EACH", "name": "Lemons", "price": 0.49}]
+
+
+def test_a_store_id_nobody_made_falls_back_to_the_printed_store(con):
+    out = ledger.import_receipt(con, {"date": "2026-10-28", "store": TJ, "storeId": "made-up-by-an-agent",
+                                      "lines": TJ_LINES})
+    store = con.execute("SELECT * FROM stores WHERE id = ?", (out["storeId"],)).fetchone()
+    assert store["chain"] == "Trader Joe's" and store["name"] == "Trader Joe's Oak"
+    assert store["address"] == "2200 West Oak" and store["storeNumber"] == "0512"
+
+
+def test_a_real_store_id_is_still_used(con):
+    sid = ledger.resolve_store(con, "Albertsons Store #12, 52 Elm St, Springfield, IL 62704")
+    assert ledger.import_receipt(con, {"date": "2026-10-28", "store": TJ, "storeId": sid, "lines": TJ_LINES})["storeId"] == sid
+
+
+def test_sweep_repairs_a_receipt_filed_under_a_missing_store(con):
+    rid = ledger.import_receipt(con, {"date": "2026-10-28", "store": TJ, "lines": TJ_LINES})["receiptId"]
+    with con:
+        con.execute("UPDATE receipts SET storeId = 'gone' WHERE id = ?", (rid,))
+        con.execute("UPDATE purchases SET storeId = 'gone' WHERE receiptId = ?", (rid,))
+        con.execute("DELETE FROM store_aliases")
+        con.execute("DELETE FROM stores")
+    ledger.sweep(con)
+    name = con.execute("SELECT s.name FROM purchases p JOIN stores s ON s.id = p.storeId WHERE p.receiptId = ?", (rid,)).fetchone()
+    assert name["name"] == "Trader Joe's Oak"
+
+
+def test_a_tax_free_receipt_that_adds_up_reconciles(con):
+    out = ledger.import_receipt(con, {"date": "2026-10-28", "store": TJ, "total": 0.49, "lines": TJ_LINES})
+    assert con.execute("SELECT reconciled FROM receipts WHERE id = ?", (out["receiptId"],)).fetchone()[0] == 1
+
+
+def test_a_tax_free_receipt_that_falls_short_does_not(con):
+    out = ledger.import_receipt(con, {"date": "2026-10-28", "store": TJ, "total": 5.00, "lines": TJ_LINES})
+    assert con.execute("SELECT reconciled FROM receipts WHERE id = ?", (out["receiptId"],)).fetchone()[0] == 0
+
+
+def test_sweep_reconciles_a_tax_free_receipt_recorded_earlier(con):
+    rid = ledger.import_receipt(con, {"date": "2026-10-28", "store": TJ, "total": 0.49, "lines": TJ_LINES})["receiptId"]
+    with con:
+        con.execute("UPDATE receipts SET reconciled = 0 WHERE id = ?", (rid,))
+    ledger.sweep(con)
+    assert con.execute("SELECT reconciled FROM receipts WHERE id = ?", (rid,)).fetchone()[0] == 1

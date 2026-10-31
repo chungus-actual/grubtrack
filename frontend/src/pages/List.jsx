@@ -98,7 +98,7 @@ export default function List() {
 
       <form className="hstack" style={{ flexWrap: 'nowrap', marginBottom: 18 }} onSubmit={(e) => { e.preventDefault(); add() }}>
         <label className="sr-only" htmlFor="add">Add to the list</label>
-        <input id="add" className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Add something: oat milk, cilantro…" autoComplete="off" />
+        <input id="add" className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Add to the list" autoComplete="off" />
         <button className="btn btn--ink" type="submit" disabled={!text.trim()}><Plus aria-hidden="true" />Add</button>
       </form>
 
@@ -113,7 +113,7 @@ export default function List() {
         if (!xs.length) return null
         return (
           <section className="section" key={kind}>
-            <div className="section-head"><h2 className="section-title">{title}</h2><span className="section-sub">tap to add</span></div>
+            <div className="section-head"><h2 className="section-title">{title}</h2></div>
             <div className="chips">
               {xs.map((s) => {
                 const name = clean(s.name)

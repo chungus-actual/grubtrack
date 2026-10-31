@@ -229,7 +229,7 @@ export function HBars({ rows, format = (v) => dollars(v, { cents: false }), onPi
     <div className="stack" style={{ gap: 9 }}>
       {rows.map((r) => (
         <button key={r.key} type="button" onClick={() => onPick?.(r.key)} title={r.sub || undefined}
-          style={{ all: 'unset', cursor: onPick ? 'pointer' : 'default', display: 'grid', gridTemplateColumns: 'minmax(96px, 30%) 1fr', gap: 12, alignItems: 'center' }}>
+          style={{ all: 'unset', cursor: onPick ? 'pointer' : 'default', display: 'grid', gridTemplateColumns: 'minmax(130px, 30%) 1fr', gap: 12, alignItems: 'center' }}>
           <span style={{ fontSize: 'var(--t-sm)', fontWeight: 600, color: 'var(--ink-2)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.label}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{ height: 14, width: `${Math.max(1.5, (r.value / max) * 82)}%`, background: 'var(--seq)', borderRadius: '0 4px 4px 0', flex: 'none' }} />

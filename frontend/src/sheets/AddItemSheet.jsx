@@ -49,7 +49,6 @@ export default function AddItemSheet({ onClose }) {
           <label className="field"><span>Brand</span><input className="input" value={f.brand} onChange={set('brand')} /></label>
           <label className="field"><span>Price paid</span><input className="input" type="number" step="0.01" min="0" value={f.price} onChange={set('price')} placeholder="0.00" /></label>
         </div>
-        <p className="note">The category is worked out from the name. A package size gives it a unit price, so it can be compared across stores and brands.</p>
         <ErrorBox error={err} />
         <div className="btn-row"><button className="btn btn--ink" type="submit" disabled={busy || !f.name.trim()}>Add to the pantry</button></div>
       </form>

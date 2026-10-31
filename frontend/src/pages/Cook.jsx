@@ -46,7 +46,7 @@ function MealIdeas() {
   }
   return (
     <section className="panel">
-      <div className="section-head"><h2 className="section-title">Ask {ai.chat} for dinner</h2><span className="section-sub">reads the pantry, leads with what expires first</span></div>
+      <div className="section-head"><h2 className="section-title">Ask {ai.chat} for dinner</h2></div>
       <div className="chips" role="group" aria-label="Look in" style={{ marginBottom: 10 }}>
         {FOCUS.map(([k, v]) => <button key={k} className="chip" aria-pressed={focus === k} onClick={() => setFocus(k)}>{v}</button>)}
       </div>
@@ -124,7 +124,7 @@ function SaveRecipe() {
             <button className="btn btn--ghost" onClick={() => setDraft({ title: '', ingredients: [], instructions: '', category: 'dinner', status: 'to-try' })}>Type it in</button>
           </div>
           {busy && <p className="note">{isUrl ? 'Reading the page…' : `${ai.extract || 'The model'} is writing it out…`}</p>}
-          {!ai.extract && <p className="note">Most recipe sites publish their recipes in a form GrubTrack reads directly. Pasted text needs a model (GT_MODEL_PROVIDER).</p>}
+          {!ai.extract && <p className="note">Pasted text needs a model (GT_MODEL_PROVIDER).</p>}
         </>}
         {draft && (
           <div className="stack">
@@ -191,7 +191,7 @@ export default function Cook() {
   return (
     <div>
       <div className="page-head"><h1 className="page-title">Cook</h1></div>
-      <p className="lede">Dinner from what's already here. Recipes are ranked by how much of each one is in the house.</p>
+      <p className="lede">Dinner from what's already here.</p>
       <div className="cols cols--2">
         <MealIdeas />
         {recipes.write && <SaveRecipe />}
@@ -199,13 +199,15 @@ export default function Cook() {
 
       <section className="section">
         <div className="toolbar">
-          <div className="seg" role="group" aria-label="Recipes">
-            <button aria-pressed={tab === 'mine'} onClick={() => setTab('mine')}>Yours{mine.data ? ` (${mine.data.personal.length})` : ''}</button>
-            {mine.data?.libraryTotal > 0 && <button aria-pressed={tab === 'library'} onClick={() => setTab('library')}>Library ({mine.data.libraryTotal.toLocaleString()})</button>}
-          </div>
+          {mine.data?.libraryTotal > 0 && (
+            <div className="seg" role="group" aria-label="Recipes">
+              <button aria-pressed={tab === 'mine'} onClick={() => setTab('mine')}>Yours ({mine.data.personal.length})</button>
+              <button aria-pressed={tab === 'library'} onClick={() => setTab('library')}>Library ({mine.data.libraryTotal.toLocaleString()})</button>
+            </div>
+          )}
           <label className="search">
             <Search aria-hidden="true" /><span className="sr-only">Search recipes</span>
-            <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search recipes or ingredients" />
+            <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search recipes" />
           </label>
           <ImportCollection onDone={() => setTab('library')} />
         </div>
@@ -229,7 +231,7 @@ export default function Cook() {
         {tab === 'library' && (lib.isLoading ? <Loading label="Searching the library" /> : lib.error ? <ErrorBox error={lib.error} /> : (
           <>
             <p className="note" style={{ marginBottom: 10 }}>
-              {plural(lib.data.total, 'recipe')}{cookable ? ' with at least three recognizable ingredients, best match first' : ''}.
+              {plural(lib.data.total, 'recipe')}
             </p>
             <div className={`list list--panel ${lib.isFetching ? 'dim' : ''}`}>
               {lib.data.recipes.map((r) => <RecipeRow key={r.slug} r={r} onOpen={() => open('recipe', r.slug)} />)}
